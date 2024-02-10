@@ -79,11 +79,17 @@ func Create_db_if_not_exists() {
 	defer db.Close()
 
 	// Create the database if it doesn't exist
+	// Check if the database exists before attempting to create it
 	checkDatabaseQuery := fmt.Sprintf("SELECT 1 FROM pg_database WHERE datname='%s'", dbname)
-	var exists bool
-	err = db.QueryRow(checkDatabaseQuery).Scan(&exists)
+	rows, err := db.Query(checkDatabaseQuery)
 	if err != nil {
 		log.Fatal("Error checking if database exists: ", err)
+	}
+	defer rows.Close()
+
+	var exists bool
+	for rows.Next() {
+		exists = true
 	}
 
 	if !exists {
@@ -94,7 +100,7 @@ func Create_db_if_not_exists() {
 			log.Fatal("Error creating database: ", err)
 		}
 	} else {
-		fmt.Println("Database already exists")
+		fmt.Println("Database already existed")
 	}
 
 	// Connect to PostgreSQL
