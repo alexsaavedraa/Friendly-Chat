@@ -26,3 +26,16 @@ on Windows, use
  $env:DB_PASSWORD="password"
 
 
+
+
+extras ideas
+1. images 
+2. avatars
+3. typing indicators
+
+events = {
+    type: new_user | message
+    user_id:
+    user_name:
+    avatar_id:
+}
