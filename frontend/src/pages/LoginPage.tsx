@@ -48,6 +48,7 @@ const Login = (props) => {
         .then(r => {
             callback(r?.userExists)
         })
+        .catch(e => setLoginError("Error finding account. Please try again."))
     }
 
     // Log in a user using username and password
@@ -70,6 +71,7 @@ const Login = (props) => {
                 window.alert("Wrong username or password")
             }
         })
+        .catch(e => setLoginError("Error logging in. Please try again."))
     }
 
 
@@ -92,6 +94,8 @@ const Login = (props) => {
                 placeholder="Enter your password here"
                 onChange={ev => setPassword(ev.target.value)}
                 className={"inputBox"} />
+                <br/>
+            <label className="errorLabel">{loginError}</label>
         </div>
         <br />
         <div className={"inputContainer"}>
@@ -100,8 +104,7 @@ const Login = (props) => {
                 type="button"
                 onClick={onButtonClick}
                 value={"Log in"} />
-            <br/>
-            <label className="errorLabel">{loginError}</label>
+            
         </div>
     </div>
 }

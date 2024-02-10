@@ -1,6 +1,7 @@
 import React from "react"
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Chat from './pages/ChatPage.tsx';
+import './App.css';
 import LoginPage from './pages/LoginPage.tsx';
 import HomePage from "./pages/HomePage.tsx";
 import { useState } from 'react';
