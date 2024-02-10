@@ -2,10 +2,8 @@ package dbutils
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 
@@ -23,6 +21,29 @@ var (
 	password = "password"
 	dbname   = "testdb"
 )
+
+func usernameExists(username string) (bool, error) {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+	var exists bool
+	checkUserExistsQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
+	// Execute the query and scan the result into 'exists' variable
+	var scanErr error
+	err = db.QueryRow(checkUserExistsQuery, username).Scan(&exists)
+	if err != nil {
+		scanErr = err
+	}
+	return exists, scanErr
+}
+
+func AuthUser(usr, pass string) {
+	fmt.Println(usernameExists(usr))
+}
 
 func Dbsetup() {
 	updateIfSet := func(envVar, value string, defaultValue *string) {
@@ -48,10 +69,38 @@ func Dbsetup() {
 func Create_db_if_not_exists() {
 
 	fmt.Println("beginning creation of DB tables.go")
-	// Connect to PostgreSQL
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
+		host, port, user, password)
 	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the Postgres: ", err)
+	}
+	defer db.Close()
+
+	// Create the database if it doesn't exist
+	checkDatabaseQuery := fmt.Sprintf("SELECT 1 FROM pg_database WHERE datname='%s'", dbname)
+	var exists bool
+	err = db.QueryRow(checkDatabaseQuery).Scan(&exists)
+	if err != nil {
+		log.Fatal("Error checking if database exists: ", err)
+	}
+
+	if !exists {
+		// If the database does not exist, create it
+		createDatabaseQuery := fmt.Sprintf("CREATE DATABASE %s", dbname)
+		_, err = db.Exec(createDatabaseQuery)
+		if err != nil {
+			log.Fatal("Error creating database: ", err)
+		}
+	} else {
+		fmt.Println("Database already exists")
+	}
+
+	// Connect to PostgreSQL
+	connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error connecting to the database: ", err)
 	}
@@ -96,7 +145,7 @@ func Create_db_if_not_exists() {
 		log.Fatal("Error creating table: ", err)
 	}
 
-	fmt.Println("Table my_table created successfully!")
+	fmt.Println("Database and table created successfully!")
 }
 
 type User struct {
@@ -106,33 +155,4 @@ type User struct {
 
 type SessionToken struct {
 	Token string `json:"token"`
-}
-
-// Mock user database
-var users = map[string]string{
-	"user1": "password1",
-	"user2": "password2",
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	// Check if user exists and password matches
-	password, ok := users[user.Username]
-	if !ok || password != user.Password {
-		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
-		return
-	}
-
-	// Generate a session token (dummy token for demonstration)
-	sessionToken := SessionToken{Token: "dummy_session_token"}
-
-	// Send session token in response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(sessionToken)
 }
