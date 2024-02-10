@@ -16,3 +16,13 @@ to select a specific database,
 to see the tables in the database
 `\dt`
 
+
+In order to run the go backend:
+first set your database username and password. on linux/mac use:
+`export DB_USERNAME=postgres`
+`export DB_PASSWORD=password`
+on Windows, use
+ $env:DB_USERNAME="postgres"
+ $env:DB_PASSWORD="password"
+
+

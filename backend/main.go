@@ -1,10 +1,10 @@
 package main
 
 import (
+	dbutils "backend/chat/dbutils"
+	"backend/chat/pkg/websocket/websocket"
 	"fmt"
 	"net/http"
-
-	"github.com/TutorialEdge/realtime-chat-go-react/pkg/websocket"
 )
 
 func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
@@ -34,6 +34,9 @@ func setupRoutes() {
 
 func main() {
 	fmt.Println("Distributed Chat App v0.01")
+	dbutils.Dbsetup()
+	dbutils.Create_db_if_not_exists()
 	setupRoutes()
 	http.ListenAndServe(":8080", nil)
+
 }
