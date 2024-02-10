@@ -12,7 +12,7 @@ import {
   from '@chatscope/chat-ui-kit-react';
 
 const ChatPage = (props) => {
-    const { username, loggedIn, setLoggedIn } = props
+    const { username } = props
     console.log(styles)
     const [chatHistory, setChatHistory] = useState<any>([])
 
@@ -30,25 +30,25 @@ const ChatPage = (props) => {
         });
     })
 
-  function send(msg: string) {
+  function handleSendMessage(msg: string) {
     sendMsg(msg);
   };
 
 return (
-    <div className="ChatPage">
-    <MainContainer>
-        <ChatContainer>       
+    <div className="ChatPage" style={{display: "flex", justifyContent: "center"}}>
+    <MainContainer style={{height: "98vh", width: "50vw", minWidth: "450px"}}>
+        <ChatContainer style={{overflow: "auto"}}>       
         <ConversationHeader>
-        <ConversationHeader.Content userName="Nimble Chat" info="Chat app" />     
+        <ConversationHeader.Content userName="Nimble Chat" />     
         </ConversationHeader>
         <MessageList >
             {
-            chatHistory.map((msg, i) => {
+            chatHistory.map((msg: any, i: number) => {
                 return (<Message key={i} model={msg} />)
             })
             }
             </MessageList>
-        <MessageInput placeholder="Type message here" attachButton={false} onSend={send}/>        
+        <MessageInput placeholder="Type message here" attachButton={false} onSend={handleSendMessage}/>        
         </ChatContainer>
     </MainContainer>
     </div>
