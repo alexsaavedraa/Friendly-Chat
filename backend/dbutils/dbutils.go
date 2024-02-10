@@ -2,8 +2,10 @@ package dbutils
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -95,4 +97,42 @@ func Create_db_if_not_exists() {
 	}
 
 	fmt.Println("Table my_table created successfully!")
+}
+
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type SessionToken struct {
+	Token string `json:"token"`
+}
+
+// Mock user database
+var users = map[string]string{
+	"user1": "password1",
+	"user2": "password2",
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Check if user exists and password matches
+	password, ok := users[user.Username]
+	if !ok || password != user.Password {
+		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		return
+	}
+
+	// Generate a session token (dummy token for demonstration)
+	sessionToken := SessionToken{Token: "dummy_session_token"}
+
+	// Send session token in response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(sessionToken)
 }

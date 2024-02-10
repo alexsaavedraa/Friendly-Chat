@@ -28,7 +28,17 @@ func setupRoutes() {
 	go pool.Start()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(pool, w, r)
+		// Print authentication token to console
+		authToken := r.Header.Get("Sec-Websocket-Protocol")
+		if authToken != "login" {
+			fmt.Println("User authentication token:", authToken)
+			serveWs(pool, w, r)
+		} else if authToken == "login" {
+			fmt.Println("User authentication token: Needs token", authToken)
+			http.Redirect(w, r, "https://freshman.tech", http.StatusTemporaryRedirect)
+			return
+		}
+
 	})
 }
 
