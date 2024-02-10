@@ -1,7 +1,7 @@
 import React from "react"
 import { useEffect, useState } from "react";
 import { connect, sendMsg } from "../api/index.ts";
-import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { 
   MainContainer, 
   ChatContainer, 
@@ -12,7 +12,7 @@ import {
   from '@chatscope/chat-ui-kit-react';
 
 const ChatPage = (props) => {
-    const { username, loggedIn, setLoggedIn } = props
+    const { username } = props
     console.log(styles)
     const [chatHistory, setChatHistory] = useState<any>([])
 
@@ -30,27 +30,27 @@ const ChatPage = (props) => {
         });
     })
 
-  function send(msg: string) {
+  function handleSendMessage(msg: string) {
     sendMsg(msg);
   };
 
 return (
-    <div className="ChatPage">
-    <MainContainer>
-        <ChatContainer>       
-        <ConversationHeader>
-        <ConversationHeader.Content userName="Nimble Chat" info="Chat app" />     
-        </ConversationHeader>
-        <MessageList >
-            {
-            chatHistory.map((msg, i) => {
-                return (<Message key={i} model={msg} />)
-            })
-            }
-            </MessageList>
-        <MessageInput placeholder="Type message here" attachButton={false} onSend={send}/>        
-        </ChatContainer>
-    </MainContainer>
+    <div className="chatContainer" style={{display: "flex", justifyContent: "center", alignItems:"center", flexDirection: "column"}}>
+        <div className={"titleContainer"}>
+            <div>Nimble Chat</div>
+        </div>
+        <MainContainer style={{height: "90vh", width: "50vw", minWidth: "450px"}}>
+            <ChatContainer style={{overflow: "auto"}}>       
+            <MessageList >
+                {
+                chatHistory.map((msg: any, i: number) => {
+                    return (<Message key={i} model={msg} />)
+                })
+                }
+                </MessageList>
+            <MessageInput placeholder="Type message here" attachButton={false} onSend={handleSendMessage}/>        
+            </ChatContainer>
+        </MainContainer>
     </div>
     );
 };

@@ -1,4 +1,8 @@
-var socket = new WebSocket("ws://localhost:8080/ws");
+let host = window.location.hostname;
+const port = 8080;
+const endpoint_base = `${host}:${port}`
+
+var socket = new WebSocket(`ws://${endpoint_base}/ws`);
 
 let connect = (callback) => {
   console.log("Attempting Connection...");
