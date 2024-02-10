@@ -22,6 +22,29 @@ var (
 	dbname   = "testdb"
 )
 
+func usernameExists(username string) (bool, error) {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+	var exists bool
+	checkUserExistsQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
+	// Execute the query and scan the result into 'exists' variable
+	var scanErr error
+	err = db.QueryRow(checkUserExistsQuery, username).Scan(&exists)
+	if err != nil {
+		scanErr = err
+	}
+	return exists, scanErr
+}
+
+func AuthUser(usr, pass string) {
+	fmt.Println(usernameExists(usr))
+}
+
 func Dbsetup() {
 	updateIfSet := func(envVar, value string, defaultValue *string) {
 		envValue := os.Getenv(envVar)
@@ -46,10 +69,44 @@ func Dbsetup() {
 func Create_db_if_not_exists() {
 
 	fmt.Println("beginning creation of DB tables.go")
-	// Connect to PostgreSQL
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
+		host, port, user, password)
 	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the Postgres: ", err)
+	}
+	defer db.Close()
+
+	// Create the database if it doesn't exist
+	// Check if the database exists before attempting to create it
+	checkDatabaseQuery := fmt.Sprintf("SELECT 1 FROM pg_database WHERE datname='%s'", dbname)
+	rows, err := db.Query(checkDatabaseQuery)
+	if err != nil {
+		log.Fatal("Error checking if database exists: ", err)
+	}
+	defer rows.Close()
+
+	var exists bool
+	for rows.Next() {
+		exists = true
+	}
+
+	if !exists {
+		// If the database does not exist, create it
+		createDatabaseQuery := fmt.Sprintf("CREATE DATABASE %s", dbname)
+		_, err = db.Exec(createDatabaseQuery)
+		if err != nil {
+			log.Fatal("Error creating database: ", err)
+		}
+	} else {
+		fmt.Println("Database already existed")
+	}
+
+	// Connect to PostgreSQL
+	connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error connecting to the database: ", err)
 	}
@@ -94,5 +151,14 @@ func Create_db_if_not_exists() {
 		log.Fatal("Error creating table: ", err)
 	}
 
-	fmt.Println("Table my_table created successfully!")
+	fmt.Println("Database and table created successfully!")
+}
+
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type SessionToken struct {
+	Token string `json:"token"`
 }
