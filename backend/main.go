@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request, username string) {
+func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request, username string, token string) {
 	fmt.Println("WebSocket Endpoint Hit")
 	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
@@ -53,7 +53,8 @@ func setupRoutes() {
 	http.HandleFunc("/check-account", checkAcc)
 	http.HandleFunc("/auth", authHandler)
 	http.HandleFunc("/signup", signupHandler)
-	http.HandleFunc("/mhist", MessageHist)
+	http.HandleFunc("/history", MessageHist)
+	http.HandleFunc("/logout", logout)
 
 	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,7 @@ func setupRoutes() {
 
 		fmt.Println("authenitcating user for ws", username, token)
 		if dbutils.FindToken(token, username) {
-			serveWs(pool, w, r, username)
+			serveWs(pool, w, r, username, token)
 		} else {
 			http.Redirect(w, r, "https://freshman.tech", 503)
 			return
@@ -93,6 +94,19 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Query().Get("username")
+	token := r.URL.Query().Get("token")
+
+	fmt.Println("authenitcating user for message history", username, token)
+	if dbutils.FindToken(token, username) {
+		if dbutils.RemoveToken(token, username) {
+			fmt.Println("successfully removedd user token: ", username)
+		}
+	}
+
 }
 
 // Handler function for the /auth route

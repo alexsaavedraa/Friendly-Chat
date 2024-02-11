@@ -129,6 +129,88 @@ func FindToken(token string, username string) bool {
 	// Add the new username-token pair.
 }
 
+func RemoveToken(token string, username string) bool {
+	for i, pair := range tokenStack {
+		if pair[1] == username && pair[0] == token {
+			tokenStack = append(tokenStack[:i], tokenStack[i+1:]...)
+			return true
+		}
+	}
+	return false
+	// Add the new username-token pair.
+}
+
+func UpdateVotes(messageID, username, timestamp, status string) int {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+	//voteid := messageID + username
+	stmt := `INSERT INTO votes (msg_id, username, vote_status, created_at)
+	VALUES ($1, $2, $3, $4)
+	ON CONFLICT (msg_id, username) DO UPDATE
+	SET vote_status = $3, created_at = $4`
+
+	// Execute the SQL statement
+	_, err = db.Exec(stmt, messageID, username, status, timestamp)
+	if err != nil {
+		log.Fatal("Error connecting adding vote to database: ", err)
+	}
+	fmt.Println("votes added")
+
+	return countvotes(messageID)
+
+}
+
+func countvotes(messageID string) int {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	var voteStatuses []string
+
+	// Iterate over the rows and append vote_status values to the slice
+	query := `SELECT vote_status FROM votes WHERE msg_id = $1`
+
+	// Execute the SQL statement
+	rows, err := db.Query(query, messageID)
+	if err != nil {
+		log.Fatal("error executing SQL statement:", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var voteStatus string
+		if err := rows.Scan(&voteStatus); err != nil {
+			log.Fatal("Error connecting to the database: ", err)
+		}
+		voteStatuses = append(voteStatuses, voteStatus)
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal("error iterating over rows:", err)
+	}
+	fmt.Println(voteStatuses)
+	upCount := 0
+	downCount := 0
+	for _, str := range voteStatuses {
+		switch str {
+		case "up":
+			upCount++
+		case "down":
+			downCount++
+		}
+	}
+	return upCount - downCount
+
+}
+
 func AddMessage(body, category, timestamp, username string) string {
 	fmt.Println(" adding message: ", body, category, timestamp, username)
 
@@ -187,14 +269,15 @@ func GetMessageHistory(number int) [][]string {
 	var single_row []string
 	// Iterate through the result rows
 	for rows.Next() {
-		var id int
+		var id string
 		var body, userID, username string
 		var createdAt string
 		err := rows.Scan(&id, &body, &userID, &username, &createdAt)
 		if err != nil {
 			log.Fatal(err)
 		}
-		single_row = []string{body, userID, username, createdAt}
+		votes := fmt.Sprint(countvotes(id))
+		single_row = []string{id, body, userID, username, createdAt, votes}
 		res = append(res, single_row)
 		//fmt.Printf("ID: %d, Body: %s, UserID: %s, Username: %s, CreatedAt: %s\n", id, body, userID, username, createdAt)
 	}
@@ -298,12 +381,12 @@ func Create_db_if_not_exists() {
 	);
 	CREATE TABLE IF NOT EXISTS votes (
 		id SERIAL PRIMARY KEY,
-		user_id VARCHAR,
+		username VARCHAR,
 		msg_id INTEGER,
 		vote_status VARCHAR,
 		created_at TIMESTAMP,
-		FOREIGN KEY (user_id) REFERENCES users(user_id),
-		FOREIGN KEY (msg_id) REFERENCES messages(id)
+		FOREIGN KEY (msg_id) REFERENCES messages(id),
+		CONSTRAINT votes_msg_id_username_key UNIQUE (msg_id, username)
 	);
 	`
 	_, err = db.Exec(createTableQuery)
@@ -353,13 +436,4 @@ func InsertUser(username string, inpassword string) {
 		log.Fatal("Error inserting user hiii: ", err)
 	}
 
-}
-
-type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type SessionToken struct {
-	Token string `json:"token"`
 }
