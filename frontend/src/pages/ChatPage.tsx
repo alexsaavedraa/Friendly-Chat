@@ -79,14 +79,17 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
       }
     }
 
+    
+
     render() {
         return (
             <div className="chatContainer" style={{display: "flex", justifyContent: "center", alignItems:"center", flexDirection: "column"}}>
-                <MainContainer style={{height: "90vh", width: "50vw", minWidth: "450px"}}>
+                <MainContainer style={{height: "90vh", width: "50vw", minWidth: "450px"}}> 
                     <ChatContainer style={{overflow: "auto"}}>       
                     <MessageList >
                     <MessageList.Content >
                         {
+                        
                         this.state.chatHistory.map((msg: any, i: number) => {
                             return (
                                 <MessageBox key={i} message={msg}/> 
