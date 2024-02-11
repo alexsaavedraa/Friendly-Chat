@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = (props) => {
-    let host = window.location.hostname;
+    let host = "192.168.0.180";
     const port = 8080;
     const endpoint_base = `${host}:${port}`
 
