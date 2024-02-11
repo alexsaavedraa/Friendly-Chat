@@ -5,16 +5,26 @@ import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { 
   MainContainer, 
   ChatContainer, 
-  ConversationHeader,
   MessageList, 
-  Message, 
-  MessageInput } 
-  from '@chatscope/chat-ui-kit-react';
+  MessageInput
+} from '@chatscope/chat-ui-kit-react';
+import MessageBox from "../components/MessageBox.tsx"
 
 const ChatPage = (props) => {
     const { username } = props
     console.log(styles)
-    const [chatHistory, setChatHistory] = useState<any>([])
+    const [chatHistory, setChatHistory] = useState<any>([
+        {
+            message: "test message that is so long that it ends up taking multiple lines. We just want to see if the line wrapping is going to end up changing or warping how the upvote and downvote buttons work. Ideally, the lines should warp and there should be a sweet little rectangle where the voting takes place.",
+            sentTime: "Just now",
+            sender: "someone",
+        },
+        {
+            message: "Yet another message. Now this one is a bit shorter.",
+            sentTime: "Just now",
+            sender: "someone",
+        }
+    ])
 
     useEffect (() => {
         connect((msg: any) => {
@@ -44,7 +54,7 @@ return (
             <MessageList >
                 {
                 chatHistory.map((msg: any, i: number) => {
-                    return (<Message key={i} model={msg} />)
+                    return (<MessageBox key={i} message={msg.message}/> )
                 })
                 }
                 </MessageList>
