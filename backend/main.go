@@ -5,6 +5,7 @@ import (
 	"backend/chat/pkg/websocket/websocket"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -52,6 +53,7 @@ func setupRoutes() {
 	http.HandleFunc("/check-account", checkAcc)
 	http.HandleFunc("/auth", authHandler)
 	http.HandleFunc("/signup", signupHandler)
+	http.HandleFunc("/mhist", MessageHist)
 
 	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -60,17 +62,37 @@ func setupRoutes() {
 		token := r.URL.Query().Get("token")
 
 		fmt.Println("authenitcating user for ws", username, token)
-		authToken := r.Header.Get("Sec-Websocket-Protocol")
 		if dbutils.FindToken(token, username) {
-
 			serveWs(pool, w, r, username)
 		} else {
-			fmt.Println("User authentication token: Needs token", authToken)
 			http.Redirect(w, r, "https://freshman.tech", 503)
 			return
 		}
 	})
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
+}
+func MessageHist(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Query().Get("username")
+	token := r.URL.Query().Get("token")
+
+	fmt.Println("authenitcating user for message history", username, token)
+	if dbutils.FindToken(token, username) {
+		messageHistory := dbutils.GetMessageHistory(10)
+		messageHistoryJSON, err := json.Marshal(messageHistory)
+		if err != nil {
+			// Handle error
+			log.Println("Error marshaling message history:", err)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(messageHistoryJSON)
+		if err != nil {
+			// Handle error
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+	}
 }
 
 // Handler function for the /auth route
