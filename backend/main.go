@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
+func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request, username string) {
 	fmt.Println("WebSocket Endpoint Hit")
 	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
@@ -16,8 +16,9 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &websocket.Client{
-		Conn: conn,
-		Pool: pool,
+		Conn:     conn,
+		Pool:     pool,
+		Username: username,
 	}
 
 	pool.Register <- client
@@ -62,10 +63,10 @@ func setupRoutes() {
 		authToken := r.Header.Get("Sec-Websocket-Protocol")
 		if dbutils.FindToken(token, username) {
 
-			serveWs(pool, w, r)
+			serveWs(pool, w, r, username)
 		} else {
 			fmt.Println("User authentication token: Needs token", authToken)
-			http.Redirect(w, r, "https://freshman.tech", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "https://freshman.tech", 503)
 			return
 		}
 	})
