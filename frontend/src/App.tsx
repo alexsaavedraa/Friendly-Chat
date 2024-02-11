@@ -5,6 +5,11 @@ import './App.css';
 import LoginPage from './pages/LoginPage.tsx';
 import HomePage from "./pages/HomePage.tsx";
 import { useState } from 'react';
+import TimeAgo from 'javascript-time-ago'
+
+import en from 'javascript-time-ago/locale/en.json'
+
+TimeAgo.addDefaultLocale(en)
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
