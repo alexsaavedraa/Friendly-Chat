@@ -25,7 +25,7 @@ const HomePage = (props) => {
                 onClick={onButtonClick}
                 value={loggedIn ? "Log out" : "Log in"} />
             {(loggedIn ? <div>
-                Your username address is {username}
+                Hello, {username}!
             </div> : <div/>)}
         </div>
     </div>

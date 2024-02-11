@@ -1,4 +1,14 @@
 html,body,blockquote,code,h1,h2,h3,h4,h5,h6,p,pre{margin:0;padding:0}
+
+.header {
+  background-color: cornflowerblue;
+  margin: 0;
+  padding: 15px;
+  color: white;
+  flex-direction: row;
+  justify-content: space-between;
+  display: flex;
+}
 .mainContainer {
     flex-direction: column;
     display: flex;
@@ -10,7 +20,9 @@ html,body,blockquote,code,h1,h2,h3,h4,h5,h6,p,pre{margin:0;padding:0}
   .chatContainer {
     flex-direction: column;
     display: flex;
-    height: 95vh;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: 85vh;
   }
 
   .messageContainer {
@@ -38,7 +50,7 @@ html,body,blockquote,code,h1,h2,h3,h4,h5,h6,p,pre{margin:0;padding:0}
   
   .titleContainer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     font-size: 64px;
     font-weight: bolder;
     align-items: center;
