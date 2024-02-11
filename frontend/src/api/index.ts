@@ -1,4 +1,4 @@
-let host = window.location.hostname;
+let host = "http://192.168.0.180:";
 const port = 8080;
 const endpoint_base = `${host}:${port}`
 

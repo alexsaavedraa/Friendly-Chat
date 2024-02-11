@@ -22,7 +22,7 @@ var (
 	dbname   = "testdb"
 )
 
-func usernameExists(username string) bool {
+func UsernameExists(username string) bool {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 	db, err := sql.Open("postgres", connStr)
@@ -34,16 +34,18 @@ func usernameExists(username string) bool {
 	checkUserExistsQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
 	// Execute the query and scan the result into 'exists' variable
 	var scanErr error
+	fmt.Println("checking if user exists: ", username)
 	err = db.QueryRow(checkUserExistsQuery, username).Scan(&exists)
 	if err != nil {
 		scanErr = err
 		log.Fatal("Error connecting to the database: ", scanErr)
 	}
+
 	return exists
 }
 
 func AuthUser(usr, pass string) {
-	fmt.Println(usernameExists(usr))
+	fmt.Println(UsernameExists(usr))
 }
 
 func Dbsetup() {
@@ -163,15 +165,15 @@ func Create_db_if_not_exists() {
 
 	// Execute the SQL statement
 
-	a := usernameExists("Alex")
-	if a {
+	a := UsernameExists("Alex")
+	if !a {
 		_, err = db.Exec(insertStatement, "Prachi", "123456", true, "Alex", "789012", false)
 		if err != nil {
 			log.Fatal("Error creating table: ", err)
-		} else {
-			fmt.Println("Dummy already exists")
 		}
 
+	} else {
+		fmt.Println("Dummy already exists")
 	}
 	//AuthUser("Prachi", "secretdata")
 
