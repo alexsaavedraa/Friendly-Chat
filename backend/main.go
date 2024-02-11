@@ -54,10 +54,13 @@ func setupRoutes() {
 	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		// Print authentication token to console
-		fmt.Println("authenitcating user for ws")
+		username := r.URL.Query().Get("username")
+		token := r.URL.Query().Get("token")
+
+		fmt.Println("authenitcating user for ws", username, token)
 		authToken := r.Header.Get("Sec-Websocket-Protocol")
-		if validate_token("hi") {
-			fmt.Println("User authentication token:", authToken)
+		if dbutils.FindToken(token, username) {
+
 			serveWs(pool, w, r)
 		} else {
 			fmt.Println("User authentication token: Needs token", authToken)
@@ -66,11 +69,6 @@ func setupRoutes() {
 		}
 	})
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
-}
-
-func validate_token(token string) bool {
-
-	return true
 }
 
 // Handler function for the /auth route

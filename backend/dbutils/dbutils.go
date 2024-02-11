@@ -122,6 +122,18 @@ func Make_and_store_token(username string) string {
 	return token
 }
 
+func FindToken(token string, username string) bool {
+	fmt.Println(token, username, "\n token stak is", tokenStack)
+	for _, pair := range tokenStack {
+		if pair[1] == username && pair[0] == token {
+			// Remove the existing username-token pair.
+			return true
+		}
+	}
+	return false
+	// Add the new username-token pair.
+}
+
 func Dbsetup() {
 	updateIfSet := func(envVar, value string, defaultValue *string) {
 		envValue := os.Getenv(envVar)
