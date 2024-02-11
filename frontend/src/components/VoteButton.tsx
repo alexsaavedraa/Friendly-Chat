@@ -15,9 +15,7 @@ interface VoteButtonProps {
     voteType: string
     scoreEffect: number
     userVote: number
-    messageScore: number
     setUserVote: Function
-    setMessageScore: Function
     messageID: string
   }
 
@@ -30,9 +28,7 @@ interface votePayload {
 const VoteButton: React.FC<VoteButtonProps> = (({voteType, 
                                                  scoreEffect,
                                                  userVote,
-                                                 messageScore,
                                                  setUserVote,
-                                                 setMessageScore,
                                                  messageID
                                                 }) => {
     let selectedIcon;
@@ -56,18 +52,15 @@ const VoteButton: React.FC<VoteButtonProps> = (({voteType,
         onClick={() => {
             let payload:votePayload = {category:"vote", MessageID: messageID, body: voteType}
             if (userVote===scoreEffect) {
-                // current vote removed
+                // remove vote
                 setUserVote(0);
-                setMessageScore(messageScore - scoreEffect)
                 payload.body = null
             } else if (userVote===0) {
-                // new vote selected
+                // add vote
                 setUserVote(scoreEffect);
-                setMessageScore(messageScore + scoreEffect)
             } else if (userVote===-scoreEffect) {
-                // vote switch
+                // switch vote
                 setUserVote(scoreEffect);
-                setMessageScore(messageScore + (2*scoreEffect))
             }
             sendMsg(JSON.stringify(payload))
             }}>
