@@ -243,8 +243,8 @@ func Create_db_if_not_exists() {
 
 	a := UsernameExists("Alex")
 	if !a {
-		insertUser("Alex", "password")
-		insertUser("Prachi", "QT")
+		InsertUser("Alex", "password")
+		InsertUser("Prachi", "QT")
 	} else {
 		fmt.Println("Dummy already exists")
 	}
@@ -252,7 +252,7 @@ func Create_db_if_not_exists() {
 
 }
 
-func insertUser(username string, inpassword string) {
+func InsertUser(username string, inpassword string) {
 
 	fmt.Println("inserting ", username, inpassword)
 

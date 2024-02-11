@@ -50,6 +50,7 @@ func setupRoutes() {
 	// Define the handler for the /auth route
 	http.HandleFunc("/check-account", checkAcc)
 	http.HandleFunc("/auth", authHandler)
+	http.HandleFunc("/signup", signupHandler)
 
 	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +166,37 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Handle error
 	}
+
+}
+
+func signupHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("authenticating user")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var login struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	// Read the request body
+	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
+		http.Error(w, "Error decoding request body", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close() // Close the request body
+	// Print the request body
+	username := login.Username
+	password := login.Password
+
+	if dbutils.UsernameExists(username) {
+		fmt.Println("User already exists")
+
+	} else {
+		dbutils.InsertUser(username, password)
+	}
+
+	fmt.Println(username, password)
 
 }
 
