@@ -10,6 +10,7 @@ import { IconButton, Divider } from "@mui/material";
 
 const MessageBox = (props) => {
     const message = props.message.body;
+    const category = props.message.category;
     const username = props.message.username;
     const timestamp = props.message.timestamp;
     const [messageScore, setMessageScore] = useState(0);
@@ -45,18 +46,30 @@ const MessageBox = (props) => {
   
     return (
         <div>
-            <div className="messageContainer">
-            <div className="messageInfoContainer">
-                    <h4>{username}</h4>
-                    <ReactTimeAgo date={timestamp} locale="en-US" timeStyle={"round-minute"}/>
-            </div>
-                <p>{message}</p>
+            {category==="new_user" ?
                 <div className="votingContainer">
-                    <VoteButton scoreEffect={1} selectedIcon={<ThumbUpAltIcon fontSize={"small"}/>} unselectedIcon={<ThumbUpOffAltIcon fontSize={"small"}/>} selectedColor={"green"}/>
-                    <div>{messageScore}</div>
-                    <VoteButton scoreEffect={-1} selectedIcon={<ThumbDownAltIcon fontSize={"small"}/>} unselectedIcon={<ThumbDownOffAltIcon fontSize={"small"}/>} selectedColor={"red"}/>
-                </div>   
-            </div>
+                    <p><b>{username}</b> has joined the chat...</p> 
+                </div>
+                :
+                <div className="messageContainer">
+                    <div className="messageInfoContainer">
+                        <h4>{username}</h4>
+                        {timestamp && <ReactTimeAgo date={timestamp} locale="en-US" timeStyle={"round-minute"}/>}
+                    </div>
+                    <p>{message}</p>
+                    <div className="votingContainer">
+                        <VoteButton scoreEffect={1} 
+                                    selectedIcon={<ThumbUpAltIcon fontSize={"small"}/>} 
+                                    unselectedIcon={<ThumbUpOffAltIcon fontSize={"small"}/>} 
+                                    selectedColor={"green"}/>
+                        <div>{messageScore}</div>
+                        <VoteButton scoreEffect={-1} 
+                                    selectedIcon={<ThumbDownAltIcon fontSize={"small"}/>} 
+                                    unselectedIcon={<ThumbDownOffAltIcon fontSize={"small"}/>} 
+                                    selectedColor={"red"}/>
+                    </div>  
+                </div>
+            }
             <Divider/>
         </div>
     )

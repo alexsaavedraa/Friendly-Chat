@@ -10,37 +10,37 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import MessageBox from "../components/MessageBox.tsx"
 
-const ChatPage = (props) => {
-    const { username } = props
-    console.log(styles)
-    const [chatHistory, setChatHistory] = useState<any>([
-        {
-            body: "test message that is so long that it ends up taking multiple lines. We just want to see if the line wrapping is going to end up changing or warping how the upvote and downvote buttons work. Ideally, the lines should warp and there should be a sweet little rectangle where the voting takes place.",
-            timestamp: new Date(),
-            username: "Bob",
-        },
-        {
-            body: "Yet another message. Now this one is a bit shorter.",
-            timestamp: new Date(),
-            username: "Joe",
-        }
-    ])
+interface ChatPageState {
+    chatHistory: any[]; // Assuming chatHistory can be an array of any type
+  }
 
-    useEffect (() => {
+class ChatPage extends React.Component<ChatPageState> {
+    constructor(props) {
+        super(props);
+        this.state = {
+          chatHistory: [],
+        }
+        console.log(styles)
+    }
+
+
+    componentDidMount() {
         const userDataString = localStorage.getItem("user");
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
         connect(username, token, (msg: any) => {
-        let msg_data = JSON.parse(msg.data)
-        setChatHistory([...chatHistory, msg_data])
-        console.log(chatHistory);
+          console.log("New Message")
+          this.setState(prevState => ({
+            chatHistory: [...this.state.chatHistory, JSON.parse(msg.data)]
+          }))
+          console.log(this.state.chatHistory);
         });
-    })
+      }
 
-  function handleSendMessage(msg: string) {
+  handleSendMessage(msg: string) {
     sendMsg(msg);
   };
-
+render() {
 return (
     <div className="chatContainer" style={{display: "flex", justifyContent: "center", alignItems:"center", flexDirection: "column"}}>
         <div className={"titleContainer"}>
@@ -50,16 +50,17 @@ return (
             <ChatContainer style={{overflow: "auto"}}>       
             <MessageList >
                 {
-                chatHistory.map((msg: any, i: number) => {
+                this.state.chatHistory.map((msg: any, i: number) => {
                     return (<MessageBox key={i} message={msg}/> )
                 })
                 }
                 </MessageList>
-            <MessageInput placeholder="Type message here" attachButton={false} onSend={handleSendMessage}/>        
+            <MessageInput placeholder="Type message here" attachButton={false} onSend={this.handleSendMessage}/>        
             </ChatContainer>
         </MainContainer>
     </div>
     );
+};
 };
 
 export default ChatPage;

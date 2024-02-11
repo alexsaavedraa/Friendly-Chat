@@ -1,8 +1,3 @@
-let host = "192.168.0.180";
-const port = 8080;
-const endpoint_base = `${host}:${port}`
-
-
   // Retrieve user data from localStorage
 
 
