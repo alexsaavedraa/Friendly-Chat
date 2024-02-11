@@ -9,9 +9,20 @@
   .chatContainer {
     flex-direction: column;
     display: flex;
-    align-items: center;
-    justify-content: center;
     height: 95vh;
+  }
+
+  .messageContainer {
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .votingContainer {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
   }
   
   .titleContainer {
