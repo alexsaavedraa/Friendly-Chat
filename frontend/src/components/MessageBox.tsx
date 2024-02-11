@@ -11,7 +11,7 @@ import { IconButton, Divider } from "@mui/material";
 const MessageBox = (props) => {
     const message = props.message.body;
     const username = props.message.username;
-    const timestamp = new Date()//props.message.timestamp;
+    const timestamp = props.message.timestamp;
     const [messageScore, setMessageScore] = useState(0);
     const [userVote, setUserVote] = useState(0);
 
@@ -52,9 +52,9 @@ const MessageBox = (props) => {
             </div>
                 <p>{message}</p>
                 <div className="votingContainer">
-                    <VoteButton scoreEffect={1} selectedIcon={<ThumbUpAltIcon/>} unselectedIcon={<ThumbUpOffAltIcon/>} selectedColor={"green"}/>
+                    <VoteButton scoreEffect={1} selectedIcon={<ThumbUpAltIcon fontSize={"small"}/>} unselectedIcon={<ThumbUpOffAltIcon fontSize={"small"}/>} selectedColor={"green"}/>
                     <div>{messageScore}</div>
-                    <VoteButton scoreEffect={-1} selectedIcon={<ThumbDownAltIcon/>} unselectedIcon={<ThumbDownOffAltIcon/>} selectedColor={"red"}/>
+                    <VoteButton scoreEffect={-1} selectedIcon={<ThumbDownAltIcon fontSize={"small"}/>} unselectedIcon={<ThumbDownOffAltIcon fontSize={"small"}/>} selectedColor={"red"}/>
                 </div>   
             </div>
             <Divider/>

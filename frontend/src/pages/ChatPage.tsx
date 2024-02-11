@@ -16,12 +16,12 @@ const ChatPage = (props) => {
     const [chatHistory, setChatHistory] = useState<any>([
         {
             body: "test message that is so long that it ends up taking multiple lines. We just want to see if the line wrapping is going to end up changing or warping how the upvote and downvote buttons work. Ideally, the lines should warp and there should be a sweet little rectangle where the voting takes place.",
-            time: new Date(),
+            timestamp: new Date(),
             username: "Bob",
         },
         {
             body: "Yet another message. Now this one is a bit shorter.",
-            sentTime: new Date(),
+            timestamp: new Date(),
             username: "Joe",
         }
     ])
