@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,9 +17,11 @@ type Client struct {
 }
 
 type Message struct {
-	Type     int    `json:"type"`
-	Category string `json:"category"`
-	Body     string `json:"body"`
+	Type      int    `json:"type"`
+	Category  string `json:"category"`
+	Username  string `json:"username"`
+	Body      string `json:"body"`
+	timestamp string `json:"time"`
 }
 
 func (c *Client) Read() {
@@ -34,7 +37,7 @@ func (c *Client) Read() {
 			return
 		}
 
-		message := Message{Type: messageType, Category: "message", Body: string(p)}
+		message := Message{Type: messageType, Category: "message", Body: string(p), Username: "testUser", timestamp: time.DateTime}
 		c.Pool.Broadcast <- message
 		fmt.Printf("Message Received: %+v\n", message)
 
