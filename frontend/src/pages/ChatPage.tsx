@@ -15,27 +15,21 @@ const ChatPage = (props) => {
     console.log(styles)
     const [chatHistory, setChatHistory] = useState<any>([
         {
-            message: "test message that is so long that it ends up taking multiple lines. We just want to see if the line wrapping is going to end up changing or warping how the upvote and downvote buttons work. Ideally, the lines should warp and there should be a sweet little rectangle where the voting takes place.",
-            sentTime: "Just now",
-            sender: "someone",
+            body: "test message that is so long that it ends up taking multiple lines. We just want to see if the line wrapping is going to end up changing or warping how the upvote and downvote buttons work. Ideally, the lines should warp and there should be a sweet little rectangle where the voting takes place.",
+            time: new Date(),
+            username: "Bob",
         },
         {
-            message: "Yet another message. Now this one is a bit shorter.",
-            sentTime: "Just now",
-            sender: "someone",
+            body: "Yet another message. Now this one is a bit shorter.",
+            sentTime: new Date(),
+            username: "Joe",
         }
     ])
 
     useEffect (() => {
         connect((msg: any) => {
         let msg_data = JSON.parse(msg.data)
-        let msg_model = {
-            message: msg_data.body,
-            sentTime: "Just now",
-            sender: "someone",
-            direction: "incoming"
-        }
-        setChatHistory([...chatHistory, msg_model])
+        setChatHistory([...chatHistory, msg_data])
         console.log(chatHistory);
         });
     })
@@ -54,7 +48,7 @@ return (
             <MessageList >
                 {
                 chatHistory.map((msg: any, i: number) => {
-                    return (<MessageBox key={i} message={msg.message}/> )
+                    return (<MessageBox key={i} message={msg}/> )
                 })
                 }
                 </MessageList>

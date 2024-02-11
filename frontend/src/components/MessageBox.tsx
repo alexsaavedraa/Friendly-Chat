@@ -1,5 +1,6 @@
 import React from "react"
 import { useState, ReactNode } from "react";
+import ReactTimeAgo from 'react-time-ago'
 
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
@@ -8,9 +9,11 @@ import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import { IconButton, Divider } from "@mui/material";
 
 const MessageBox = (props) => {
-    const message = props.message
-    const [messageScore, setMessageScore] = useState(0)
-    const [userVote, setUserVote] = useState(0)
+    const message = props.message.body;
+    const username = props.message.username;
+    const timestamp = new Date()//props.message.timestamp;
+    const [messageScore, setMessageScore] = useState(0);
+    const [userVote, setUserVote] = useState(0);
 
     interface VoteButtonProps {
         scoreEffect: number
@@ -21,7 +24,9 @@ const MessageBox = (props) => {
 
     const VoteButton: React.FC<VoteButtonProps> = (({scoreEffect, selectedIcon, unselectedIcon, selectedColor}) => {
         return (
-            <IconButton sx={userVote==scoreEffect && { color: selectedColor }} onClick={() => {
+            <IconButton 
+            sx={{ color: (userVote==scoreEffect && selectedColor), '&:hover': {color: selectedColor}}} 
+            onClick={() => {
                 if (userVote===scoreEffect) {
                     setUserVote(0);
                     setMessageScore(messageScore - scoreEffect)
@@ -40,15 +45,19 @@ const MessageBox = (props) => {
   
     return (
         <div>
-        <div className="messageContainer">
-            <p>{message}</p>
-            <div className="votingContainer">
-                <VoteButton scoreEffect={1} selectedIcon={<ThumbUpAltIcon/>} unselectedIcon={<ThumbUpOffAltIcon/>} selectedColor={"green"}/>
-                <div>{messageScore}</div>
-                <VoteButton scoreEffect={-1} selectedIcon={<ThumbDownAltIcon/>} unselectedIcon={<ThumbDownOffAltIcon/>} selectedColor={"red"}/>
-            </div>   
-        </div>
-        <Divider/>
+            <div className="messageContainer">
+            <div className="messageInfoContainer">
+                    <h4>{username}</h4>
+                    <ReactTimeAgo date={timestamp} locale="en-US" timeStyle={"round-minute"}/>
+            </div>
+                <p>{message}</p>
+                <div className="votingContainer">
+                    <VoteButton scoreEffect={1} selectedIcon={<ThumbUpAltIcon/>} unselectedIcon={<ThumbUpOffAltIcon/>} selectedColor={"green"}/>
+                    <div>{messageScore}</div>
+                    <VoteButton scoreEffect={-1} selectedIcon={<ThumbDownAltIcon/>} unselectedIcon={<ThumbDownOffAltIcon/>} selectedColor={"red"}/>
+                </div>   
+            </div>
+            <Divider/>
         </div>
     )
 };
