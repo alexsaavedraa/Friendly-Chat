@@ -66,7 +66,7 @@ func setupRoutes() {
 		if dbutils.FindToken(token, username) {
 			serveWs(pool, w, r, username, token)
 		} else {
-			http.Redirect(w, r, "https://freshman.tech", 503)
+
 			return
 		}
 	})
@@ -100,7 +100,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	token := r.URL.Query().Get("token")
 
-	fmt.Println("authenitcating user for message history", username, token)
+	fmt.Println("authenitcating user logout", username, token)
 	if dbutils.FindToken(token, username) {
 		if dbutils.RemoveToken(token, username) {
 			fmt.Println("successfully removedd user token: ", username)
