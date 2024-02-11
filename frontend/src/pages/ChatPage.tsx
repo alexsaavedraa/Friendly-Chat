@@ -27,7 +27,10 @@ const ChatPage = (props) => {
     ])
 
     useEffect (() => {
-        connect((msg: any) => {
+        const userDataString = localStorage.getItem("user");
+        const userData = userDataString ? JSON.parse(userDataString) : null;
+        const { username, token } = userData || {};
+        connect(username, token, (msg: any) => {
         let msg_data = JSON.parse(msg.data)
         let msg_model = {
             message: msg_data.body,

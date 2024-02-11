@@ -28,8 +28,16 @@ const Login = (props) => {
             if (accountExists)
                 logIn()
             else
-                if (window.confirm("An account does not exist with this email address: " + username + ". Do you want to create a new account?")) {
-                    logIn()
+                if (window.confirm("An account does not exist with this username: " + username + ". Do you want to create a new account?")) {
+                    createAccount()
+                    .then(() => {
+                        // This code will only run after createAccount completes successfully
+                        logIn();
+                    })
+                    .catch(error => {
+                        // Handle any errors that occurred during createAccount
+                        console.error("Error creating account:", error);
+                    });
                 }
         })        
 
@@ -73,6 +81,33 @@ const Login = (props) => {
         })
         .catch(e => setLoginError("Error logging in. Please try again."))
     }
+
+    const createAccount = async () => {
+        try {
+            const response = await fetch(`http://${endpoint_base}/signup`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            
+            if ('success' === data.message) {
+                localStorage.setItem("user", JSON.stringify({ username, token: data.token }));
+                props.setLoggedIn(true);
+                props.setUsername(username);
+                navigate("/chat");
+            } else {
+                window.alert("Signup Failed. Please Try a different username");
+            }
+        } catch (error) {
+            setLoginError("Error logging in. Please try a different username.");
+        }
+    };
+
+
 
 
     return <div className={"mainContainer"}>
