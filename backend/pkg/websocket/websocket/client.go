@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	dbutils "backend/chat/dbutils"
 	"fmt"
 	"log"
 	"sync"
@@ -22,7 +23,8 @@ type Message struct {
 	Category  string `json:"category"`
 	Username  string `json:"username"`
 	Body      string `json:"body"`
-	timestamp string `json:"time"`
+	Timestamp string `json:"time"`
+	MessageID string `json:"MessageID"`
 }
 
 func (c *Client) Read() {
@@ -33,12 +35,18 @@ func (c *Client) Read() {
 
 	for {
 		messageType, p, err := c.Conn.ReadMessage()
+		fmt.Println(p)
 		if err != nil {
 			log.Println(err)
 			return
 		}
+		currentTime := time.Now()
+		formattedTime := currentTime.Format("2006-01-02 15:04:05")
+		mid := dbutils.AddMessage(string(p), "message", formattedTime, c.Username)
 
-		message := Message{Type: messageType, Category: "message", Body: string(p), Username: c.Username, timestamp: time.DateTime}
+		message := Message{Type: messageType, Category: "message", Body: string(p), Username: c.Username, Timestamp: formattedTime, MessageID: mid}
+
+		fmt.Println(mid)
 		c.Pool.Broadcast <- message
 		fmt.Printf("Message Received: %+v\n", message)
 

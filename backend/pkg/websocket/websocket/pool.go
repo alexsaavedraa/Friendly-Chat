@@ -29,7 +29,7 @@ func (pool *Pool) Start() {
 			fmt.Println("Size of Connection Pool: ", len(pool.Clients))
 			for client, _ := range pool.Clients {
 				fmt.Println(client)
-				client.Conn.WriteJSON(Message{Type: 1, Category: "new_user", Body: "New User Joined...", Username: client.Username, timestamp: string(time.DateTime)})
+				client.Conn.WriteJSON(Message{Type: 1, Category: "new_user", Body: "New User Joined...", Username: client.Username, Timestamp: string(time.DateTime)})
 			}
 			break
 		case client := <-pool.Unregister:
@@ -40,6 +40,7 @@ func (pool *Pool) Start() {
 			}
 			break
 		case message := <-pool.Broadcast:
+			//if message.Category
 			fmt.Println("Sending message to all clients in Pool")
 			for client, _ := range pool.Clients {
 				if err := client.Conn.WriteJSON(message); err != nil {

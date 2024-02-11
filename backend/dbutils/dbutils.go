@@ -13,10 +13,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Function2() {
-	fmt.Println("This is function 2 from file2.go")
-}
-
 var (
 	host     = "localhost"
 	port     = 5432
@@ -73,7 +69,6 @@ func AuthUser(username, inpassword string) bool {
 		}
 		fmt.Println(err)
 	}
-	fmt.Println("about to hash in the auth user")
 	var hashedPasswordFromDB string
 	// Query to fetch hashed password based on user_id
 	row = db.QueryRow("SELECT password_hash FROM passwords WHERE user_id = $1", userID)
@@ -132,6 +127,83 @@ func FindToken(token string, username string) bool {
 	}
 	return false
 	// Add the new username-token pair.
+}
+
+func AddMessage(body, category, timestamp, username string) string {
+	fmt.Println(" adding message: ", body, category, timestamp, username)
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	var userID string
+	row := db.QueryRow("SELECT user_id FROM users WHERE username = $1", username)
+	err = row.Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// User not found
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+	}
+
+	var id int64
+	err = db.QueryRow("INSERT INTO messages (user_id, username, body, created_at) VALUES ($1, $2, $3, $4) RETURNING id", userID, username, body, timestamp).Scan(&id)
+	if err != nil {
+		log.Fatal("Error inserting user ope : ", err)
+	}
+	fmt.Println("Inserted message with ID:", id)
+
+	return fmt.Sprint(id)
+}
+func GetMessageHistory(number int) [][]string {
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	query := `
+        SELECT id, body, user_id, username, created_at
+        FROM messages
+        ORDER BY id DESC
+        LIMIT 20;
+    `
+
+	// Execute the query
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var res [][]string
+	var single_row []string
+	// Iterate through the result rows
+	for rows.Next() {
+		var id int
+		var body, userID, username string
+		var createdAt string
+		err := rows.Scan(&id, &body, &userID, &username, &createdAt)
+		if err != nil {
+			log.Fatal(err)
+		}
+		single_row = []string{body, userID, username, createdAt}
+		res = append(res, single_row)
+		//fmt.Printf("ID: %d, Body: %s, UserID: %s, Username: %s, CreatedAt: %s\n", id, body, userID, username, createdAt)
+	}
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return res
+
 }
 
 func Dbsetup() {
@@ -218,9 +290,9 @@ func Create_db_if_not_exists() {
 	);
 	CREATE TABLE IF NOT EXISTS messages (
 		id SERIAL PRIMARY KEY,
-		msg_id VARCHAR,
 		body TEXT,
 		user_id VARCHAR,
+		username VARCHAR,
 		created_at TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(user_id)
 	);
