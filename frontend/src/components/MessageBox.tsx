@@ -1,48 +1,17 @@
 import React from "react"
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import ReactTimeAgo from 'react-time-ago'
-
-import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
-import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
-import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
-import { IconButton, Divider } from "@mui/material";
+import VoteButton from './VoteButton.tsx'
+import { Divider } from "@mui/material";
 
 const MessageBox = (props) => {
     const message = props.message.body;
+    const messageID = props.message?.MessageID;
     const category = props.message.category;
     const username = props.message.username;
-    const timestamp = new Date()// props.message.timestamp;
+    const timestamp =  props.message.time ? new Date(props.message.time) : null;
     const [messageScore, setMessageScore] = useState(0);
     const [userVote, setUserVote] = useState(0);
-
-    interface VoteButtonProps {
-        scoreEffect: number
-        selectedIcon: ReactNode
-        unselectedIcon: ReactNode
-        selectedColor: string
-      }
-
-    const VoteButton: React.FC<VoteButtonProps> = (({scoreEffect, selectedIcon, unselectedIcon, selectedColor}) => {
-        return (
-            <IconButton 
-            sx={{ color: (userVote==scoreEffect && selectedColor), '&:hover': {color: selectedColor}}} 
-            onClick={() => {
-                if (userVote===scoreEffect) {
-                    setUserVote(0);
-                    setMessageScore(messageScore - scoreEffect)
-                } else if (userVote===0) {
-                    setUserVote(scoreEffect);
-                    setMessageScore(messageScore + scoreEffect)
-                } else if (userVote===-scoreEffect) {
-                    setUserVote(scoreEffect);
-                    setMessageScore(messageScore + (2*scoreEffect))
-                }
-                }}>
-                {userVote==scoreEffect ? selectedIcon : unselectedIcon}
-            </IconButton>
-        )
-    })
   
     return (
         <div>
@@ -58,15 +27,24 @@ const MessageBox = (props) => {
                     </div>
                     <p>{message}</p>
                     <div className="votingContainer">
-                        <VoteButton scoreEffect={1} 
-                                    selectedIcon={<ThumbUpAltIcon fontSize={"small"}/>} 
-                                    unselectedIcon={<ThumbUpOffAltIcon fontSize={"small"}/>} 
-                                    selectedColor={"green"}/>
+                        <VoteButton voteType={"up"} 
+                                    scoreEffect={1} 
+                                    userVote={userVote}
+                                    messageScore={messageScore}
+                                    setUserVote={setUserVote}
+                                    setMessageScore={setMessageScore}
+                                    messageID={messageID}
+                                    />
                         <div>{messageScore}</div>
-                        <VoteButton scoreEffect={-1} 
-                                    selectedIcon={<ThumbDownAltIcon fontSize={"small"}/>} 
-                                    unselectedIcon={<ThumbDownOffAltIcon fontSize={"small"}/>} 
-                                    selectedColor={"red"}/>
+                        <VoteButton voteType={"down"} 
+                                    scoreEffect={-1}
+                                    userVote={userVote}
+                                    messageScore={messageScore}
+                                    setUserVote={setUserVote}
+                                    setMessageScore={setMessageScore}
+                                    messageID={messageID}
+                                    />
+
                     </div>  
                 </div>
             }
