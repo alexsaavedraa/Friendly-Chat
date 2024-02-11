@@ -59,6 +59,7 @@ export function connect(username: string, token: string, callback) {
         };
 
         socket.onerror = error => {
+            window.location.href = '/login';
             console.log("Socket Error: ", error);
         };
     }

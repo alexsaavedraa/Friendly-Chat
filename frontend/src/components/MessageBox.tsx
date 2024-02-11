@@ -12,7 +12,7 @@ const MessageBox = (props) => {
     const message = props.message.body;
     const category = props.message.category;
     const username = props.message.username;
-    const timestamp = props.message.timestamp;
+    const timestamp = new Date()// props.message.timestamp;
     const [messageScore, setMessageScore] = useState(0);
     const [userVote, setUserVote] = useState(0);
 
