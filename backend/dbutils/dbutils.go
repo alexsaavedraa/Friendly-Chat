@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+
 	_ "github.com/lib/pq"
 )
 
@@ -22,6 +25,8 @@ var (
 	dbname   = "testdb"
 )
 
+var tokenStack [][]string
+
 func UsernameExists(username string) bool {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -34,18 +39,87 @@ func UsernameExists(username string) bool {
 	checkUserExistsQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
 	// Execute the query and scan the result into 'exists' variable
 	var scanErr error
-	fmt.Println("checking if user exists: ", username)
+	//fmt.Println("checking if user exists: ", username)
 	err = db.QueryRow(checkUserExistsQuery, username).Scan(&exists)
 	if err != nil {
 		scanErr = err
 		log.Fatal("Error connecting to the database: ", scanErr)
 	}
-
+	//fmt.Println("User ", username, " exists")
 	return exists
 }
 
-func AuthUser(usr, pass string) {
-	fmt.Println(UsernameExists(usr))
+func AuthUser(username, inpassword string) bool {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+	//double check user exists just in case of spoofing
+	if !UsernameExists(username) {
+		//fmt.Println("the status of alex existing is ", !UsernameExists(username))
+		//return false
+	}
+
+	var userID string
+	row := db.QueryRow("SELECT user_id FROM users WHERE username = $1", username)
+	err = row.Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// User not found
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+	}
+	fmt.Println("about to hash in the auth user")
+	var hashedPasswordFromDB string
+	// Query to fetch hashed password based on user_id
+	row = db.QueryRow("SELECT password_hash FROM passwords WHERE user_id = $1", userID)
+	err = row.Scan(&hashedPasswordFromDB)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Password not found
+			return false
+		}
+		return false
+	}
+
+	// Compare fetched hashed password with provided hashed password
+	return comparePasswords(inpassword, hashedPasswordFromDB)
+
+}
+func comparePasswords(providedPassword string, hashedPasswordFromDB string) bool {
+	// Compare hashed password from DB with provided password
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPasswordFromDB), []byte(providedPassword))
+	fmt.Println(err)
+	return err == nil
+}
+
+func hashpassword(unhashed_password string) string {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(unhashed_password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal("Error connecting to the Postgres: ", err)
+	}
+	res := string(hashed)
+
+	return res
+}
+
+func Make_and_store_token(username string) string {
+	token := uuid.New().String()
+	for i, pair := range tokenStack {
+		if pair[1] == username {
+			// Remove the existing username-token pair.
+			tokenStack = append(tokenStack[:i], tokenStack[i+1:]...)
+			break // Exit loop once removed
+		}
+	}
+	// Add the new username-token pair.
+	tokenStack = append(tokenStack, []string{token, username})
+	fmt.Println(tokenStack)
+	return token
 }
 
 func Dbsetup() {
@@ -118,34 +192,33 @@ func Create_db_if_not_exists() {
 	// Create the table
 	createTableQuery := `
 	CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
+		id SERIAL,
 		username VARCHAR,
-		user_id VARCHAR,
+		user_id VARCHAR PRIMARY KEY,
 		is_active BOOLEAN,
 		created_at TIMESTAMP,
 		last_online TIMESTAMP
 	);
 	CREATE TABLE IF NOT EXISTS passwords (
-		password_id SERIAL PRIMARY KEY,
+		user_id VARCHAR PRIMARY KEY,
 		password_hash VARCHAR,
-		user_id INTEGER,
-		FOREIGN KEY (user_id) REFERENCES users(id)
+		FOREIGN KEY (user_id) REFERENCES users(user_id)
 	);
 	CREATE TABLE IF NOT EXISTS messages (
 		id SERIAL PRIMARY KEY,
 		msg_id VARCHAR,
 		body TEXT,
-		user_id INTEGER,
+		user_id VARCHAR,
 		created_at TIMESTAMP,
-		FOREIGN KEY (user_id) REFERENCES users(id)
+		FOREIGN KEY (user_id) REFERENCES users(user_id)
 	);
 	CREATE TABLE IF NOT EXISTS votes (
 		id SERIAL PRIMARY KEY,
-		user_id INTEGER,
+		user_id VARCHAR,
 		msg_id INTEGER,
 		vote_status VARCHAR,
 		created_at TIMESTAMP,
-		FOREIGN KEY (user_id) REFERENCES users(id),
+		FOREIGN KEY (user_id) REFERENCES users(user_id),
 		FOREIGN KEY (msg_id) REFERENCES messages(id)
 	);
 	`
@@ -156,26 +229,45 @@ func Create_db_if_not_exists() {
 
 	fmt.Println("Database and table created successfully! \n Inserting dummy User")
 
-	insertStatement := `
-	INSERT INTO users (username, user_id, is_active, created_at, last_online) 
-	VALUES 
-		($1, $2, $3, NOW(), NOW()),
-		($4, $5, $6, NOW(), NOW());
-`
-
-	// Execute the SQL statement
-
 	a := UsernameExists("Alex")
 	if !a {
-		_, err = db.Exec(insertStatement, "Prachi", "123456", true, "Alex", "789012", false)
-		if err != nil {
-			log.Fatal("Error creating table: ", err)
-		}
-
+		insertUser("Alex", "password")
+		insertUser("Prachi", "QT")
 	} else {
 		fmt.Println("Dummy already exists")
 	}
 	//AuthUser("Prachi", "secretdata")
+
+}
+
+func insertUser(username string, inpassword string) {
+
+	fmt.Println("inserting ", username, inpassword)
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	userID := uuid.New().String()
+
+	_, err = db.Exec("INSERT INTO users (username, user_id,is_active, created_at, last_online ) VALUES ($1, $2, $3,  NOW(), NOW())", username, userID, true)
+	if err != nil {
+		log.Fatal("Error inserting user ope : ", err)
+	}
+
+	// Get the ID of the inserted user
+
+	hashed_password := hashpassword(inpassword)
+
+	// Insert the hashed password into the passwords table
+	_, err = db.Exec("INSERT INTO passwords (password_hash, user_id) VALUES ($1, $2)", hashed_password, userID)
+	if err != nil {
+		log.Fatal("Error inserting user hiii: ", err)
+	}
 
 }
 

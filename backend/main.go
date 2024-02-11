@@ -5,7 +5,6 @@ import (
 	"backend/chat/pkg/websocket/websocket"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -55,17 +54,23 @@ func setupRoutes() {
 	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		// Print authentication token to console
+		fmt.Println("authenitcating user for ws")
 		authToken := r.Header.Get("Sec-Websocket-Protocol")
-		if authToken != "login" {
+		if validate_token("hi") {
 			fmt.Println("User authentication token:", authToken)
 			serveWs(pool, w, r)
-		} else if authToken == "login" {
+		} else {
 			fmt.Println("User authentication token: Needs token", authToken)
-			// http.Redirect(w, r, "https://freshman.tech", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "https://freshman.tech", http.StatusTemporaryRedirect)
 			return
 		}
 	})
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
+}
+
+func validate_token(token string) bool {
+
+	return true
 }
 
 // Handler function for the /auth route
@@ -118,26 +123,51 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	var login struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
 
 	// Read the request body
-	body, err := io.ReadAll(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
+		http.Error(w, "Error decoding request body", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close() // Close the request body
+	// Print the request body
+	username := login.Username
+	password := login.Password
+	fmt.Println(username, password)
+	res := dbutils.AuthUser(username, password)
+	fmt.Println("validated user", username)
+
+	var jsonResponse map[string]string
+
+	if res {
+		token := dbutils.Make_and_store_token(username)
+		jsonResponse = map[string]string{"message": "success",
+			"token": token}
+	} else {
+		jsonResponse = map[string]string{"message": "failure"}
+	}
+
+	// Marshal the JSON response only once
+	responseBytes, err := json.Marshal(jsonResponse)
 	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 		return
 	}
 
-	// Print the request body
-	fmt.Println(w, "Request body:", string(body))
+	// Set content type header
+	w.Header().Set("Content-Type", "application/json")
 
-	// You can add your authentication logic here
-
-	// Send a response
+	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonResponse)
+	_, err = w.Write(responseBytes)
 	if err != nil {
-		fmt.Println("Error writing response:", err)
+		// Handle error
 	}
+
 }
 
 func main() {
