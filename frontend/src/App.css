@@ -24,6 +24,13 @@ html,body,blockquote,code,h1,h2,h3,h4,h5,h6,p,pre{margin:0;padding:0}
     padding-bottom: 20px;
     height: 85vh;
   }
+  .loaderContainer {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
 
   .messageContainer {
     flex-direction: column;

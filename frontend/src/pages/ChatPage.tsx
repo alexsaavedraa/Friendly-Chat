@@ -6,7 +6,8 @@ import {
   MainContainer, 
   ChatContainer, 
   MessageList, 
-  MessageInput
+  MessageInput,
+  Loader
 } from '@chatscope/chat-ui-kit-react';
 import MessageBox from "../components/MessageBox.tsx"
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ interface ChatPageState {
     charsMessage: string
     chatMessageTooLong: boolean
     messageScores: any
+    loadingHistory: boolean
   }
 
   interface ChatPageProps {
@@ -27,6 +29,7 @@ interface ChatPageState {
     setLoggedIn: Function; 
     navigate: any;
   }
+
   interface Message {
     type: number;
     category: string;
@@ -46,7 +49,8 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
           chatHistory: [],
           charsMessage: "256 characters remaining",
           chatMessageTooLong: false,
-          messageScores: {}        
+          messageScores: {} ,
+          loadingHistory: false
         }
         console.log(styles)
     }
@@ -111,6 +115,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
       }
     }
     async fetchHistory() {
+        this.setState({loadingHistory: true})
         const userDataString = localStorage.getItem("user");
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
@@ -125,8 +130,9 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
             return acc;
         }, {});
           this.setState(prevState => ({
-            chatHistory: [...history, ...this.state.chatHistory],
-            messageScores: {...this.state.messageScores, ...historyMessageScores}
+            chatHistory: [...history],
+            messageScores: {...this.state.messageScores, ...historyMessageScores},
+            loadingHistory: false
           }))
         } catch (error) {
           console.error('Error fetching history:', error);
@@ -139,9 +145,12 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         return (
             <div className="chatContainer" style={{display: "flex", justifyContent: "center", alignItems:"center", flexDirection: "column"}}>
                 <MainContainer style={{height: "90vh", width: "50vw", minWidth: "450px"}}> 
-                    <ChatContainer style={{overflow: "auto"}}>       
+                    <ChatContainer style={{overflow: "auto"}}>
+                     
                     <MessageList >
                       <MessageList.Content >
+                        {this.state.loadingHistory && 
+                        <div className="loaderContainer"><Loader>Loading Chat History...</Loader> </div>}
                           {
                             this.state.chatHistory.map((msg: any, i:number) => {
                                 return (
