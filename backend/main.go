@@ -73,11 +73,12 @@ func setupRoutes() {
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
 }
 func MessageHist(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("getting history")
 	username := r.URL.Query().Get("username")
 	token := r.URL.Query().Get("token")
 
-	fmt.Println("authenitcating user for message history", username, token)
 	if dbutils.FindToken(token, username) {
+		fmt.Println("authenitcating user for message history", username, token)
 		messageHistory := dbutils.GetMessageHistory(10)
 		messageHistoryJSON, err := json.Marshal(messageHistory)
 		if err != nil {
@@ -86,6 +87,7 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
+		fmt.Println(messageHistory)
 		_, err = w.Write(messageHistoryJSON)
 		if err != nil {
 			// Handle error

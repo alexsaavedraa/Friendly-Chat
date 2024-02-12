@@ -242,7 +242,18 @@ func AddMessage(body, category, timestamp, username string) string {
 
 	return fmt.Sprint(id)
 }
-func GetMessageHistory(number int) [][]string {
+
+type Message struct {
+	ID        string `json:"MessageID"`
+	Body      string `json:"body"`
+	UserID    string `json:"user_id"`
+	Username  string `json:"username"`
+	CreatedAt string `json:"time"`
+	Votes     string `json:"votes"`
+	Category  string `json:"category"`
+}
+
+func GetMessageHistory(number int) []Message {
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -264,23 +275,25 @@ func GetMessageHistory(number int) [][]string {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//fmt.Println(rows)
 	defer rows.Close()
-	var res [][]string
-	var single_row []string
+
 	// Iterate through the result rows
+	var res []Message
 	for rows.Next() {
-		var id string
-		var body, userID, username string
-		var createdAt string
-		err := rows.Scan(&id, &body, &userID, &username, &createdAt)
+		var msg Message
+		msg.Category = "message"
+		err := rows.Scan(&msg.ID, &msg.Body, &msg.UserID, &msg.Username, &msg.CreatedAt)
 		if err != nil {
 			log.Fatal(err)
 		}
-		votes := fmt.Sprint(countvotes(id))
-		single_row = []string{id, body, userID, username, createdAt, votes}
-		res = append(res, single_row)
-		//fmt.Printf("ID: %d, Body: %s, UserID: %s, Username: %s, CreatedAt: %s\n", id, body, userID, username, createdAt)
+		msg.Votes = fmt.Sprint(countvotes(msg.ID))
+		res = append([]Message{msg}, res...)
 	}
+
+	//fmt.Println("logging history")
+	//=fmt.Printf("ID: %d, Body: %s, UserID: %s, Username: %s, CreatedAt: %s\n", id, body, userID, username, createdAt)
+
 	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
