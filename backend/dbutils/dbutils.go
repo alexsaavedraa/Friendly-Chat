@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -166,6 +165,48 @@ func UpdateVotes(messageID, username, timestamp, status string) int {
 
 }
 
+func uservotes(username, messageID string) string {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	var voteStatus string
+
+	// Iterate over the rows and append vote_status values to the slice
+	query := `SELECT vote_status FROM votes WHERE msg_id = $1 AND username = $2;`
+
+	// Execute the SQL statement
+	rows, err := db.Query(query, messageID, username)
+	if err != nil {
+		log.Fatal("Error executing query: ", err)
+	}
+	defer rows.Close()
+
+	// Iterate over the rows returned by the query
+	for rows.Next() {
+		// Scan the vote_status value from the current row into voteStatus variable
+		if err := rows.Scan(&voteStatus); err != nil {
+			log.Fatal("Error scanning row: ", err)
+		}
+		// Process voteStatus or store it somewhere
+	}
+
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		log.Fatal("Error iterating over rows: ", err)
+	}
+
+	// Print or return the voteStatus value retrieved, if needed
+	//fmt.Println("Vote status:", voteStatus)
+
+	return voteStatus // or return or process voteStatus as needed
+
+}
+
 func countvotes(messageID string) int {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -197,7 +238,7 @@ func countvotes(messageID string) int {
 	if err := rows.Err(); err != nil {
 		log.Fatal("error iterating over rows:", err)
 	}
-	fmt.Println(voteStatuses)
+	//fmt.Println(voteStatuses)
 	upCount := 0
 	downCount := 0
 	for _, str := range voteStatuses {
@@ -213,7 +254,7 @@ func countvotes(messageID string) int {
 }
 
 func AddMessage(body, category, timestamp, username string) string {
-	fmt.Println(" adding message: ", body, category, timestamp, username)
+	//fmt.Println(" adding message: ", body, category, timestamp, username)
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -239,7 +280,7 @@ func AddMessage(body, category, timestamp, username string) string {
 	if err != nil {
 		log.Fatal("Error inserting user ope : ", err)
 	}
-	fmt.Println("Inserted message with ID:", id)
+	//fmt.Println("Inserted message with ID:", id)
 
 	return fmt.Sprint(id)
 }
@@ -252,9 +293,10 @@ type Message struct {
 	CreatedAt string `json:"time"`
 	Votes     string `json:"votes"`
 	Category  string `json:"category"`
+	Uservote  string `json:"user_vote"`
 }
 
-func GetMessageHistory(number int) []Message {
+func GetMessageHistory(number int, username string) []Message {
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -289,16 +331,10 @@ func GetMessageHistory(number int) []Message {
 			log.Fatal(err)
 		}
 		msg.Votes = fmt.Sprint(countvotes(msg.ID))
-		currentTime := time.Now()
-		dbtime, err := time.Parse("2006-01-02 15:04:05", msg.CreatedAt)
-		fmt.Println(currentTime.Sub(dbtime))
+		msg.Uservote = uservotes(username, msg.ID)
 		res = append([]Message{msg}, res...)
 	}
 
-	//fmt.Println("logging history")
-	//=fmt.Printf("ID: %d, Body: %s, UserID: %s, Username: %s, CreatedAt: %s\n", id, body, userID, username, createdAt)
-
-	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
