@@ -100,7 +100,6 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
     };
 
     handleInputChange = (currInput: string) => {
-      console.log(this.state.chatMessageTooLong)
       if (256>=currInput.length) {
         this.setState({
           charsMessage: `${256-currInput.length} characters remaining`,
