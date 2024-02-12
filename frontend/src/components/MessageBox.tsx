@@ -38,8 +38,11 @@ const MessageBox = (props) => {
             <div className="messageContainer">
                 <div className="messageInfoContainer">
                     <h4>{username}</h4>
-                    {timestamp && <ReactTimeAgo date={timestamp} locale="en-US" timeStyle={"round-minute"}/>}
-                </div>
+                    {timestamp ? (
+                        <ReactTimeAgo date={(timestamp.getTime() + timestamp.getTimezoneOffset() * 60000)} locale="en-US" timeStyle={"round-minute"} />
+                    ) : (
+                        <ReactTimeAgo date={Date.now()} locale="en-US" timeStyle={"round-minute"} />
+                    )}                </div>
                 <p>{message}</p>
                 <div className="votingContainer">
                     <VoteButton voteType={"up"} 
