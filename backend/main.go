@@ -79,7 +79,7 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 
 	if dbutils.FindToken(token, username) {
 		fmt.Println("authenitcating user for message history", username, token)
-		messageHistory := dbutils.GetMessageHistory(10)
+		messageHistory := dbutils.GetMessageHistory(10, username)
 		messageHistoryJSON, err := json.Marshal(messageHistory)
 		if err != nil {
 			// Handle error
@@ -87,7 +87,7 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(messageHistory)
+		//fmt.Println(messageHistory)
 		_, err = w.Write(messageHistoryJSON)
 		if err != nil {
 			// Handle error
@@ -113,7 +113,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 // Handler function for the /auth route
 func checkAcc(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Checking user exists")
+	//fmt.Println("Checking user exists")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -156,7 +156,7 @@ func checkAcc(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("authenticating user")
+	//fmt.Println("authenticating user")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -175,7 +175,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 	// Print the request body
 	username := login.Username
 	password := login.Password
-	fmt.Println(username, password)
+	//fmt.Println(username, password)
 	res := dbutils.AuthUser(username, password)
 	fmt.Println("validated user", username)
 
@@ -209,7 +209,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func signupHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("authenticating user")
+	//fmt.Println("authenticating user")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

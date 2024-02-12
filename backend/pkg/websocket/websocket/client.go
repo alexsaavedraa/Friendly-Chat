@@ -37,7 +37,7 @@ func (c *Client) Read() {
 
 	for {
 		messageType, p, err := c.Conn.ReadMessage()
-		fmt.Println(p)
+		//fmt.Println(p)
 		if err != nil {
 			log.Println(err)
 			return
@@ -55,9 +55,9 @@ func (c *Client) Read() {
 			fmt.Println("Error:", err)
 			return
 		}
-		fmt.Println(payload.Category, payload.Body, payload.MessageID)
+		//fmt.Println(payload.Category, payload.Body, payload.MessageID)
 		currentTime := time.Now()
-		formattedTime := currentTime.Format("2006-01-02 15:04:05")
+		formattedTime := currentTime.Format("2006-01-02 15:04:05Z")
 		if payload.Category == "message" {
 			m := payload.Body
 
