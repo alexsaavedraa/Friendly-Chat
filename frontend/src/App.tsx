@@ -17,14 +17,14 @@ function App() {
   const userData = userDataString ? JSON.parse(userDataString) : null;
   const { username, token } = userData || {};
   const [loggedIn, setLoggedIn] = useState(token ? true : false)
-  const [userName, setUsername] = useState("")
+  const [userName, setUsername] = useState(username)
 
   return (
     <div className="App">
       <Header loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage username={userName} loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>}/>
+          <Route path="/" element={<HomePage username={userName} loggedIn={loggedIn} />}/>
           <Route path="/chat" element={<ChatPage loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
           <Route path="/login" element={<LoginPage setLoggedIn={setLoggedIn} setGlobalUsername={setUsername} />} />
         </Routes>

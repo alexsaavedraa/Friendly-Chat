@@ -34,6 +34,7 @@ interface ChatPageState {
     body: string;
     time: string;
     MessageID: string;
+    votes: string;
   }
   
 
@@ -60,7 +61,6 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
           this.props.navigate("/login")
         }
         this.fetchHistory()
-        //console.log("The state is ", this.state)
         const userDataString = localStorage.getItem("user");
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
@@ -119,7 +119,14 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
             throw new Error('Failed to fetch history');
           }
           const history: Message[] = await response.json();
-          this.setState({ chatHistory: history });
+          const historyMessageScores = history.reduce((acc, message) => {
+            acc[message.MessageID] = message.votes;
+            return acc;
+        }, {});
+          this.setState(prevState => ({
+            chatHistory: [...history, ...this.state.chatHistory],
+            messageScores: {...this.state.messageScores, ...historyMessageScores}
+          }))
         } catch (error) {
           console.error('Error fetching history:', error);
         }
@@ -135,11 +142,9 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
                     <MessageList >
                       <MessageList.Content >
                           {
-                            this.state.chatHistory.map((msg: any) => {
-                              //console.log(msg?.MessageID)
-                              // console.log(this.state.messageScores[msg?.MessageID])
+                            this.state.chatHistory.map((msg: any, i:number) => {
                                 return (
-                                    <MessageBox key={msg.MessageID} 
+                                    <MessageBox key={i} 
                                                 message={msg} 
                                                 messageScore={this.state.messageScores[msg?.MessageID]}/> 
                                 )

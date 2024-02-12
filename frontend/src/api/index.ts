@@ -12,7 +12,7 @@ export function connect(username: string, token: string, callback) {
         };
 
         socket.onmessage = msg => {
-            console.log(msg);
+            console.log(JSON.parse(msg.data));
             callback(msg)
         };
 
