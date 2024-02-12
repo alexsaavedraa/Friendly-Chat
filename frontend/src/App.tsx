@@ -13,8 +13,12 @@ import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false)
+  const userDataString = localStorage.getItem("user");
+  const userData = userDataString ? JSON.parse(userDataString) : null;
+  const { username, token } = userData || {};
+  const [loggedIn, setLoggedIn] = useState(token ? true : false)
   const [userName, setUsername] = useState("")
+
   return (
     <div className="App">
       <Header loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
@@ -22,7 +26,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage username={userName} loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>}/>
           <Route path="/chat" element={<ChatPage loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
-          <Route path="/login" element={<LoginPage setLoggedIn={setLoggedIn} setUsername={setUsername} />} />
+          <Route path="/login" element={<LoginPage setLoggedIn={setLoggedIn} setGlobalUsername={setUsername} />} />
         </Routes>
       </BrowserRouter>
     </div>

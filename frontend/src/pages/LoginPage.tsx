@@ -6,6 +6,7 @@ const Login = (props) => {
     const port = 8080;
     const endpoint_base = `${host}:${port}`
 
+    const { setLoggedIn, setGlobalUsername } = props
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [loginError, setLoginError] = useState("")
@@ -72,8 +73,8 @@ const Login = (props) => {
         .then(r => {
             if ('success' === r.message) {
                 localStorage.setItem("user", JSON.stringify({username, token: r.token}))
-                props.setLoggedIn(true)
-                props.setUsername(username)
+                setLoggedIn(true)
+                setGlobalUsername(username)
                 navigate("/chat")
             } else {
                 window.alert("Wrong username or password")
@@ -96,8 +97,8 @@ const Login = (props) => {
             
             if ('success' === data.message) {
                 localStorage.setItem("user", JSON.stringify({ username, token: data.token }));
-                props.setLoggedIn(true);
-                props.setUsername(username);
+                setLoggedIn(true);
+                setGlobalUsername(username);
                 navigate("/chat");
             } else {
                 window.alert("Signup Failed. Please Try a different username");

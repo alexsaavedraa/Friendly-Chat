@@ -1,40 +1,3 @@
-  // Retrieve user data from localStorage
-
-
-//var socket = new WebSocket(`ws://${endpoint_base}/ws?username=${username}&token=${token}`);
-
-
-// let connect = (callback) => {
-//   console.log("Attempting Connection...");
-
-//   socket.onopen = () => {
-//     console.log("Successfully Connected");
-//   };
-
-//   socket.onmessage = msg => {
-//     console.log(msg);
-//     callback(msg)
-//   };
-
-//   socket.onclose = event => {
-//     console.log("Socket Closed Connection: ", event);
-//   };
-
-//   socket.onerror = error => {
-//     console.log("Socket Error: ", error);
-//   };
-// };
-
-// let sendMsg = msg => {
-//   console.log("sending msg: ", msg);
-//   socket.send(msg);
-// };
-
-//export { connect, sendMsg };
-
-
-// api/index.ts
-
 let socket: WebSocket | null = null;
 
 export function connect(username: string, token: string, callback) {
@@ -51,10 +14,10 @@ export function connect(username: string, token: string, callback) {
         socket.onmessage = msg => {
             console.log(msg);
             callback(msg)
-            // Handle incoming messages...
         };
 
         socket.onclose = event => {
+            window.location.href = '/login';
             console.log("Socket Closed Connection: ", event);
         };
 
@@ -64,6 +27,12 @@ export function connect(username: string, token: string, callback) {
         };
     }
 }
+
+export function close() {
+    if (socket) {
+        socket.close()
+    }
+};
 
 export function sendMsg(msg: string) {
     if (socket) {
