@@ -35,6 +35,7 @@ interface ChatPageState {
     time: string;
     MessageID: string;
     votes: string;
+    user_vote: string | null;
   }
   
 

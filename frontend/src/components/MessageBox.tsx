@@ -11,7 +11,11 @@ const MessageBox = (props) => {
     const username = props.message.username;
     const timestamp =  props.message.time ? new Date(props.message.time) : null;
     const messageScore = props.messageScore
-    const [userVote, setUserVote] = useState(0);
+    let initialVote:number;
+    if (props.message.user_vote=="up") {initialVote=1}
+    else if (props.message.user_vote=="down") {initialVote=-1}
+    else  {initialVote=0}
+    const [userVote, setUserVote] = useState(initialVote);
 
     enum eventTypes {
         msg  = "message",
