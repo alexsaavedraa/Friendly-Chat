@@ -32,7 +32,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
           chatMessageTooLong: false,
           messageScores: {}        
         }
-        console.log(styles)
+        const style = styles
     }
 
     componentWillReceiveProps = (nextProps) => {
@@ -41,15 +41,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
       }
     }
 
-    componentDidMount() {
-        if (!this.props.loggedIn) {
-          this.props.navigate("/login")
-        }
-        const userDataString = localStorage.getItem("user");
-        const userData = userDataString ? JSON.parse(userDataString) : null;
-        const { username, token } = userData || {};
-        connect(username, token, (msg: any) => {
-          console.log("New Message")
+    connectCallback = (msg:any) => {
           let msg_data = JSON.parse(msg.data)
           let msg_id = msg_data.MessageID;
           if (msg_data.category=="votes") {
@@ -65,7 +57,17 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
               messageScores: {...this.state.messageScores, [msg_id] : "0"}
             }))
           }
-        });
+        }
+
+
+    componentDidMount() {
+        if (this.props.loggedIn) {
+          console.log("Chat Component logged in ", this.props.loggedIn)
+          const userDataString = localStorage.getItem("user");
+          const userData = userDataString ? JSON.parse(userDataString) : null;
+          const { username, token } = userData || {};
+          connect(username, token, this.connectCallback)
+        }
       }
 
     handleSendMessage = (msg: string) => {
@@ -77,7 +79,6 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
     };
 
     handleInputChange = (currInput: string) => {
-      console.log(this.state.chatMessageTooLong)
       if (256>=currInput.length) {
         this.setState({
           charsMessage: `${256-currInput.length} characters remaining`,
@@ -101,8 +102,6 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
                       <MessageList.Content >
                           {
                             this.state.chatHistory.map((msg: any) => {
-                              // console.log(msg?.MessageID)
-                              // console.log(this.state.messageScores[msg?.MessageID])
                                 return (
                                     <MessageBox key={msg.MessageID} 
                                                 message={msg} 

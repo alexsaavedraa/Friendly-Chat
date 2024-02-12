@@ -2,6 +2,7 @@ import React from "react"
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import { Button } from "@mui/material";
+import { close } from "../api/index.ts";
 
 
 interface LoginManageButtonProps {
@@ -14,6 +15,8 @@ const LoginManageButton: React.FC<LoginManageButtonProps> = (({isLoggedIn, setIs
     const handleLoginLogout = (() => {
         if (isLoggedIn) {
             setIsLoggedIn(false);
+            close()
+            localStorage.removeItem("user")
         }
         
     });

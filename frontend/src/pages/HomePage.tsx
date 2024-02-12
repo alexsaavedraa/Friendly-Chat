@@ -6,9 +6,7 @@ const HomePage = (props) => {
     const navigate = useNavigate();
     
     const onButtonClick = () => {
-
             navigate("/login")
-
     }
 
     return <div className="mainContainer">
