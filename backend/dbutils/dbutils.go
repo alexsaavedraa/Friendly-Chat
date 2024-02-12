@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -288,6 +289,9 @@ func GetMessageHistory(number int) []Message {
 			log.Fatal(err)
 		}
 		msg.Votes = fmt.Sprint(countvotes(msg.ID))
+		currentTime := time.Now()
+		dbtime, err := time.Parse("2006-01-02 15:04:05", msg.CreatedAt)
+		fmt.Println(currentTime.Sub(dbtime))
 		res = append([]Message{msg}, res...)
 	}
 
