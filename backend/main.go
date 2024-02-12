@@ -66,18 +66,19 @@ func setupRoutes() {
 		if dbutils.FindToken(token, username) {
 			serveWs(pool, w, r, username, token)
 		} else {
-			http.Redirect(w, r, "https://freshman.tech", 503)
+
 			return
 		}
 	})
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
 }
 func MessageHist(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("getting history")
 	username := r.URL.Query().Get("username")
 	token := r.URL.Query().Get("token")
 
-	fmt.Println("authenitcating user for message history", username, token)
 	if dbutils.FindToken(token, username) {
+		fmt.Println("authenitcating user for message history", username, token)
 		messageHistory := dbutils.GetMessageHistory(10)
 		messageHistoryJSON, err := json.Marshal(messageHistory)
 		if err != nil {
@@ -86,6 +87,7 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
+		fmt.Println(messageHistory)
 		_, err = w.Write(messageHistoryJSON)
 		if err != nil {
 			// Handle error
@@ -100,7 +102,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	token := r.URL.Query().Get("token")
 
-	fmt.Println("authenitcating user for message history", username, token)
+	fmt.Println("authenitcating user logout", username, token)
 	if dbutils.FindToken(token, username) {
 		if dbutils.RemoveToken(token, username) {
 			fmt.Println("successfully removedd user token: ", username)

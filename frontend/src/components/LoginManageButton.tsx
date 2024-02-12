@@ -2,6 +2,9 @@ import React from "react"
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import { Button } from "@mui/material";
+const host = "192.168.0.180";
+const port = 8080;
+const endpoint_base = `${host}:${port}`;
 import { close } from "../api/index.ts";
 
 
@@ -12,14 +15,27 @@ interface LoginManageButtonProps {
 
 const LoginManageButton: React.FC<LoginManageButtonProps> = (({isLoggedIn, setIsLoggedIn}) => {
 
-    const handleLoginLogout = (() => {
+    const handleLoginLogout = async () => {
         if (isLoggedIn) {
             setIsLoggedIn(false);
             close()
             localStorage.removeItem("user")
+            try {
+                const userDataString = localStorage.getItem("user");
+                const userData = userDataString ? JSON.parse(userDataString) : null;
+                const { username, token } = userData || {};
+                const response = await fetch(`http://${endpoint_base}/logout?username=${username}&token=${token}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                });
+                // Handle response if needed
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
         }
-        
-    });
+    };
 
     return (
         <Button
