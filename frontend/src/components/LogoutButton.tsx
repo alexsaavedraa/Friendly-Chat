@@ -1,6 +1,5 @@
 import React from "react"
 import LogoutIcon from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
 import { Button } from "@mui/material";
 import { close } from "../api/index.ts";
 
@@ -10,12 +9,12 @@ const endpoint_base = `${host}:${port}`;
 
 
 
-interface LoginManageButtonProps {
+interface LogoutButtonProps {
     isLoggedIn: boolean
     setIsLoggedIn: Function
   }
 
-const LoginManageButton: React.FC<LoginManageButtonProps> = (({isLoggedIn, setIsLoggedIn}) => {
+const LogoutButton: React.FC<LogoutButtonProps> = (({isLoggedIn, setIsLoggedIn}) => {
 
     const handleLoginLogout = async () => {
         if (isLoggedIn) {
@@ -40,23 +39,26 @@ const LoginManageButton: React.FC<LoginManageButtonProps> = (({isLoggedIn, setIs
             localStorage.removeItem("user")
         }
     };
-
-    return (
-        <Button
-            sx={{ borderRadius: 10 , 
-                  color:"cornflowerblue", 
-                  bgcolor:"white",
-                  ":hover": {
-                    color:"white"
-                  }
-                }}
-            variant="contained"
-            startIcon={isLoggedIn ? <LogoutIcon/> : <LoginIcon/>}
-            onClick={handleLoginLogout}
-        >
-            {isLoggedIn ? "Log Out" : "Log In"}
-        </Button>
-    )
+    if (isLoggedIn) {
+        return (
+            <Button
+                sx={{ borderRadius: 10 , 
+                    color:"cornflowerblue", 
+                    bgcolor:"white",
+                    ":hover": {
+                        color:"white"
+                    }
+                    }}
+                variant="contained"
+                startIcon={<LogoutIcon/> }
+                onClick={handleLoginLogout}
+            >
+                {isLoggedIn ? "Log Out" : "Log In"}
+            </Button>
+        )
+    } else {
+        return
+    }
 });
 
-export default LoginManageButton;
+export default LogoutButton;

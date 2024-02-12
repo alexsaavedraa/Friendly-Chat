@@ -2,16 +2,21 @@ import React from "react"
 import { useNavigate } from "react-router-dom";
 
 const HomePage = (props) => {
-    const { loggedIn, username } = props
+    const { username, loggedIn } = props
     const navigate = useNavigate();
+    console.log(username)
     
     const onButtonClick = () => {
-            navigate("/login")
+        if (loggedIn) {navigate("/chat")}
+        else { navigate("/login") }
     }
 
     return <div className="mainContainer">
         <div className={"titleContainer"}>
-            <div>Welcome!</div>
+            { loggedIn ?
+                <div>Welcome, {username}!</div> :
+                <div>Welcome!</div> 
+            }
         </div>
         <div>
             This is the home page.
@@ -21,10 +26,7 @@ const HomePage = (props) => {
                 className={"inputButton"}
                 type="button"
                 onClick={onButtonClick}
-                value={loggedIn ? "Log out" : "Log in"} />
-            {(loggedIn ? <div>
-                Hello, {username}!
-            </div> : <div/>)}
+                value={loggedIn ? "Chat" : "Log in"} />
         </div>
     </div>
 }
