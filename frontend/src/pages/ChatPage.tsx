@@ -1,6 +1,7 @@
 import React from "react"
 import { connect, sendMsg } from "../api/index.ts";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+
 import { 
   MainContainer, 
   ChatContainer, 
@@ -9,6 +10,10 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import MessageBox from "../components/MessageBox.tsx"
 import { useNavigate } from "react-router-dom";
+const host = "192.168.0.180";
+const port = 8080;
+const endpoint_base = `${host}:${port}`;
+
 
 interface ChatPageState {
     chatHistory: any[]; 
@@ -22,6 +27,15 @@ interface ChatPageState {
     setLoggedIn: Function; 
     navigate: any;
   }
+  interface Message {
+    type: number;
+    category: string;
+    username: string;
+    body: string;
+    time: string;
+    MessageID: string;
+  }
+  
 
 class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
     constructor(props) {
@@ -45,12 +59,15 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         if (!this.props.loggedIn) {
           this.props.navigate("/login")
         }
+        this.fetchHistory()
+        //console.log("The state is ", this.state)
         const userDataString = localStorage.getItem("user");
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
-        connect(username, token, (msg: any) => {
+        const connection_status = connect(username, token, (msg: any) => {
           console.log("New Message")
           let msg_data = JSON.parse(msg.data)
+          console.log(msg_data)
           let msg_id = msg_data.MessageID;
           if (msg_data.category=="votes") {
             if (msg_id) {
@@ -66,6 +83,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
             }))
           }
         });
+        console.log("the connection status is ", connection_status)
       }
 
     handleSendMessage = (msg: string) => {
@@ -91,6 +109,21 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         })
       }
     }
+    async fetchHistory() {
+        const userDataString = localStorage.getItem("user");
+        const userData = userDataString ? JSON.parse(userDataString) : null;
+        const { username, token } = userData || {};
+        try {
+          const response = await fetch(`http://${endpoint_base}/history?username=${username}&token=${token}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch history');
+          }
+          const history: Message[] = await response.json();
+          this.setState({ chatHistory: history });
+        } catch (error) {
+          console.error('Error fetching history:', error);
+        }
+      }
 
     
 
@@ -103,7 +136,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
                       <MessageList.Content >
                           {
                             this.state.chatHistory.map((msg: any) => {
-                              // console.log(msg?.MessageID)
+                              //console.log(msg?.MessageID)
                               // console.log(this.state.messageScores[msg?.MessageID])
                                 return (
                                     <MessageBox key={msg.MessageID} 
