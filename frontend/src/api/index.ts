@@ -1,10 +1,8 @@
+import { endpoint_base } from "../config";
 let socket: WebSocket | null = null;
 
-export function connect(username: string, token: string, callback) {
+export function connect(username: string, token: string, callback: any) {
     if (!socket) {
-        const host = "192.168.0.180";
-        const port = 8080;
-        const endpoint_base = `${host}:${port}`;
         socket = new WebSocket(`ws://${endpoint_base}/ws?username=${username}&token=${token}`);
 
         socket.onopen = () => {

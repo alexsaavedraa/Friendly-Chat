@@ -1,7 +1,7 @@
 import React from "react"
 import { useNavigate } from "react-router-dom";
 
-const HomePage = (props) => {
+const HomePage = (props: any) => {
     const { username, loggedIn } = props
     const navigate = useNavigate();
     console.log(username)
@@ -19,7 +19,7 @@ const HomePage = (props) => {
             }
         </div>
         <div>
-            This is the home page.
+            Welcome to the home page of my chatroom app. To create an account, log in with any credentials and click OK -Alex Saavedra.
         </div>
         <div className={"buttonContainer"}>
             <input

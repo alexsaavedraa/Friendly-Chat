@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { endpoint_base } from "../config";
 
-const Login = (props) => {
-    let host = "192.168.0.180";
-    const port = 8080;
-    const endpoint_base = `${host}:${port}`
+const Login = (props: any) => {
 
     const { setLoggedIn, setGlobalUsername } = props
     const [username, setUsername] = useState("")
@@ -25,7 +23,7 @@ const Login = (props) => {
             return
         }
 
-        checkAccountExists(accountExists => {
+        checkAccountExists((accountExists: boolean) => {
             if (accountExists)
                 logIn()
             else
@@ -45,7 +43,7 @@ const Login = (props) => {
 
     }
 
-    const checkAccountExists = (callback) => {
+    const checkAccountExists =(callback: any)  => {
         fetch(`http://${endpoint_base}/check-account`, {
             method: "POST",
             headers: {

@@ -37,7 +37,6 @@ func (c *Client) Read() {
 
 	for {
 		messageType, p, err := c.Conn.ReadMessage()
-		//fmt.Println(p)
 		if err != nil {
 			log.Println(err)
 			return

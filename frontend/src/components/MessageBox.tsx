@@ -4,7 +4,7 @@ import ReactTimeAgo from 'react-time-ago'
 import VoteButton from './VoteButton.tsx'
 import { Divider } from "@mui/material";
 
-const MessageBox = (props) => {
+const MessageBox = (props: any) => {
     const message = props.message.body;
     const messageID = props.message?.MessageID;
     const category = props.message.category;
@@ -39,7 +39,7 @@ const MessageBox = (props) => {
                 <div className="messageInfoContainer">
                     <h4>{username}</h4>
                     {timestamp ? (
-                        <ReactTimeAgo date={(timestamp.getTime() + timestamp.getTimezoneOffset() * 60000)} locale="en-US" timeStyle={"round-minute"} />
+                        <ReactTimeAgo date={(timestamp.getTime())} locale="en-US" timeStyle={"round-minute"} />
                     ) : (
                         <ReactTimeAgo date={Date.now()} locale="en-US" timeStyle={"round-minute"} />
                     )}                </div>
@@ -64,6 +64,7 @@ const MessageBox = (props) => {
             <Divider/>
         </div>
     )}
+    return null
 };
 
 export default MessageBox

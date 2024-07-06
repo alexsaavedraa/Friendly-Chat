@@ -2,10 +2,10 @@ import React from "react";
 import LogoutButton from "./LogoutButton.tsx";
 
 
-const Header = (props) => {
+const Header = (props: any) => {
     const { loggedIn, setLoggedIn } = props
     return <div className="header">
-            <h2>Nimble Challenge Chat</h2>
+            <h2>Simple Chat room</h2>
             <LogoutButton 
                 isLoggedIn={loggedIn}
                 setIsLoggedIn={setLoggedIn}

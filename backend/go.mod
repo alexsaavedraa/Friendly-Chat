@@ -8,6 +8,5 @@ require (
 
 )
 
-require github.com/jmoiron/sqlx v1.3.5 // indirect
 
 go 1.22.0

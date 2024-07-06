@@ -43,29 +43,29 @@ const VoteButton: React.FC<VoteButtonProps> = (({voteType,
         unselectedIcon=<ThumbDownOffAltIcon fontSize={"small"}/>
         selectedColor="red"
     } else {
-        return
+        return null
     }
     
     return (
-        <IconButton 
-        sx={{ color: (userVote==scoreEffect && selectedColor), '&:hover': {color: selectedColor}}} 
-        onClick={() => {
-            let payload:votePayload = {category:"vote", MessageID: messageID, body: voteType}
-            if (userVote===scoreEffect) {
-                // remove vote
-                setUserVote(0);
-                payload.body = null
-            } else if (userVote===0) {
-                // add vote
-                setUserVote(scoreEffect);
-            } else if (userVote===-scoreEffect) {
-                // switch vote
-                setUserVote(scoreEffect);
-            }
-            sendMsg(JSON.stringify(payload))
-            }}>
-            {userVote==scoreEffect ? selectedIcon : unselectedIcon}
-        </IconButton>
+       <IconButton 
+    sx={{ color: (userVote === scoreEffect ? selectedColor : 'inherit'), '&:hover': {color: selectedColor}}} 
+    onClick={() => {
+        let payload: votePayload = { category: "vote", MessageID: messageID, body: voteType };
+        if (userVote === scoreEffect) {
+            // remove vote
+            setUserVote(0);
+            payload.body = null;
+        } else if (userVote === 0) {
+            // add vote
+            setUserVote(scoreEffect);
+        } else if (userVote === -scoreEffect) {
+            // switch vote
+            setUserVote(scoreEffect);
+        }
+        sendMsg(JSON.stringify(payload));
+    }}>
+    {userVote === scoreEffect ? selectedIcon : unselectedIcon}
+</IconButton>
     )
 })
 

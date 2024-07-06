@@ -1,11 +1,9 @@
 import React from "react"
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Button } from "@mui/material";
-import { close } from "../api/index.ts";
+import { close } from "../api/index";
+import { endpoint_base } from "../config";
 
-const host = "192.168.0.180";
-const port = 8080;
-const endpoint_base = `${host}:${port}`;
 
 
 
@@ -57,7 +55,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = (({isLoggedIn, setIsLoggedIn})
             </Button>
         )
     } else {
-        return
+        return null 
     }
 });
 

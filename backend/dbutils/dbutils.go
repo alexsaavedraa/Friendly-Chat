@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -13,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// the environmental variables used to access database.
 var (
 	host     = "localhost"
 	port     = 5432
@@ -21,8 +21,10 @@ var (
 	dbname   = "testdb"
 )
 
+// Token Stack store currently authenticated users
 var tokenStack [][]string
 
+// Given a username, returns if the username exists in the database
 func UsernameExists(username string) bool {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -33,18 +35,16 @@ func UsernameExists(username string) bool {
 	defer db.Close()
 	var exists bool
 	checkUserExistsQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
-	// Execute the query and scan the result into 'exists' variable
 	var scanErr error
-	//fmt.Println("checking if user exists: ", username)
 	err = db.QueryRow(checkUserExistsQuery, username).Scan(&exists)
 	if err != nil {
 		scanErr = err
 		log.Fatal("Error connecting to the database: ", scanErr)
 	}
-	//fmt.Println("User ", username, " exists")
 	return exists
 }
 
+// Authenticates a username and password, returns bool
 func AuthUser(username, inpassword string) bool {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -53,12 +53,9 @@ func AuthUser(username, inpassword string) bool {
 		log.Fatal("Error connecting to the database: ", err)
 	}
 	defer db.Close()
-	//double check user exists just in case of spoofing
 	if !UsernameExists(username) {
-		//fmt.Println("the status of alex existing is ", !UsernameExists(username))
-		//return false
-	}
 
+	}
 	var userID string
 	row := db.QueryRow("SELECT user_id FROM users WHERE username = $1", username)
 	err = row.Scan(&userID)
@@ -85,13 +82,15 @@ func AuthUser(username, inpassword string) bool {
 	return comparePasswords(inpassword, hashedPasswordFromDB)
 
 }
+
+// Compare hashed password from DB with provided password using BCRYPT.
 func comparePasswords(providedPassword string, hashedPasswordFromDB string) bool {
-	// Compare hashed password from DB with provided password
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPasswordFromDB), []byte(providedPassword))
 	fmt.Println(err)
 	return err == nil
 }
 
+// Hashes a password with BCRYPT.
 func hashpassword(unhashed_password string) string {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(unhashed_password), bcrypt.DefaultCost)
 	if err != nil {
@@ -102,6 +101,7 @@ func hashpassword(unhashed_password string) string {
 	return res
 }
 
+// for a given username, make and store the auth token.
 func Make_and_store_token(username string) string {
 	token := uuid.New().String()
 	for i, pair := range tokenStack {
@@ -117,18 +117,18 @@ func Make_and_store_token(username string) string {
 	return token
 }
 
+// returns if the token username combo is valid
 func FindToken(token string, username string) bool {
 	fmt.Println(token, username, "\n token stak is", tokenStack)
 	for _, pair := range tokenStack {
 		if pair[1] == username && pair[0] == token {
-			// Remove the existing username-token pair.
 			return true
 		}
 	}
 	return false
-	// Add the new username-token pair.
 }
 
+// removes a username token pair.
 func RemoveToken(token string, username string) bool {
 	for i, pair := range tokenStack {
 		if pair[1] == username && pair[0] == token {
@@ -137,9 +137,9 @@ func RemoveToken(token string, username string) bool {
 		}
 	}
 	return false
-	// Add the new username-token pair.
 }
 
+// updates the votes table with a new vote
 func UpdateVotes(messageID, username, timestamp, status string) int {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -148,23 +148,19 @@ func UpdateVotes(messageID, username, timestamp, status string) int {
 		log.Fatal("Error connecting to the database: ", err)
 	}
 	defer db.Close()
-	//voteid := messageID + username
 	stmt := `INSERT INTO votes (msg_id, username, vote_status, created_at)
 	VALUES ($1, $2, $3, $4)
 	ON CONFLICT (msg_id, username) DO UPDATE
 	SET vote_status = $3, created_at = $4`
 
-	// Execute the SQL statement
 	_, err = db.Exec(stmt, messageID, username, status, timestamp)
 	if err != nil {
 		log.Fatal("Error connecting adding vote to database: ", err)
 	}
-	fmt.Println("votes added")
-
 	return countvotes(messageID)
-
 }
 
+// for a given username and message, returns what the user has voted for.
 func uservotes(username, messageID string) string {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -176,37 +172,27 @@ func uservotes(username, messageID string) string {
 
 	var voteStatus string
 
-	// Iterate over the rows and append vote_status values to the slice
 	query := `SELECT vote_status FROM votes WHERE msg_id = $1 AND username = $2;`
 
-	// Execute the SQL statement
 	rows, err := db.Query(query, messageID, username)
 	if err != nil {
 		log.Fatal("Error executing query: ", err)
 	}
 	defer rows.Close()
-
-	// Iterate over the rows returned by the query
 	for rows.Next() {
-		// Scan the vote_status value from the current row into voteStatus variable
 		if err := rows.Scan(&voteStatus); err != nil {
 			log.Fatal("Error scanning row: ", err)
 		}
-		// Process voteStatus or store it somewhere
 	}
-
-	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
 		log.Fatal("Error iterating over rows: ", err)
 	}
 
-	// Print or return the voteStatus value retrieved, if needed
-	//fmt.Println("Vote status:", voteStatus)
-
-	return voteStatus // or return or process voteStatus as needed
+	return voteStatus
 
 }
 
+// counts the votes for a given message.
 func countvotes(messageID string) int {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -253,6 +239,7 @@ func countvotes(messageID string) int {
 
 }
 
+// adds a message to the message table.
 func AddMessage(body, category, timestamp, username string) string {
 	//fmt.Println(" adding message: ", body, category, timestamp, username)
 
@@ -296,6 +283,8 @@ type Message struct {
 	Uservote  string `json:"user_vote"`
 }
 
+// gets x number of previous messages.
+// TODO SQL calls need to be optimized.
 func GetMessageHistory(number int, username string) []Message {
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -310,7 +299,7 @@ func GetMessageHistory(number int, username string) []Message {
         SELECT id, body, user_id, username, created_at
         FROM messages
         ORDER BY id DESC
-        LIMIT 20;
+        LIMIT 10;
     `
 
 	// Execute the query
@@ -342,33 +331,36 @@ func GetMessageHistory(number int, username string) []Message {
 
 }
 
+// Sets up the database on first run, inserting a dummy user.
 func Dbsetup() {
-	updateIfSet := func(envVar, value string, defaultValue *string) {
+	updateIfSet := func(envVar string, value *string, defaultValue *string) {
 		envValue := os.Getenv(envVar)
 		if envValue != "" {
-			value = envValue
+			*value = envValue
 			fmt.Printf("%s is set to: %s\n", envVar, envValue)
 		} else {
 			if defaultValue != nil {
-				value = *defaultValue
+				*value = *defaultValue
 			}
-			fmt.Printf("%s is not set in your environment. Using default value: %s\n", envVar, value)
+			fmt.Printf("%s is not set in your environment. Using default value: %s\n", envVar, *value)
 		}
 	}
 
-	updateIfSet("DB_HOST", host, &host)
-	updateIfSet("DB_PORT", strconv.Itoa(port), nil)
-	updateIfSet("DB_USERNAME", user, &user)
-	updateIfSet("DB_PASSWORD", password, &password)
-	updateIfSet("DB_NAME", dbname, &dbname)
+	updateIfSet("DB_HOST", &host, &host)
+	updateIfSet("DB_USERNAME", &user, &user)
+	updateIfSet("DB_PASSWORD", &password, &password)
+	updateIfSet("DB_NAME", &dbname, &dbname)
+
 }
 
+// if the database doesnt exist, this creates one.
 func Create_db_if_not_exists() {
 
 	fmt.Println("beginning creation of DB tables.go")
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
 		host, port, user, password)
+	fmt.Println(host)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error connecting to the Postgres: ", err)
@@ -453,13 +445,15 @@ func Create_db_if_not_exists() {
 	if !a {
 		InsertUser("Alex", "password")
 		InsertUser("Prachi", "QT")
+		InsertUser("DemoUser", "password")
 	} else {
 		fmt.Println("Dummy already exists")
 	}
-	//AuthUser("Prachi", "secretdata")
 
 }
 
+// inserts a user, generates password hash, userID etc.
+// Cannot insert a user with the same username.
 func InsertUser(username string, inpassword string) {
 
 	fmt.Println("inserting ", username, inpassword)

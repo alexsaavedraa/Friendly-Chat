@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+// This function is called whenever the websocket endpoint is hit.
+// it accepts the ws pool, and adds a new client.
 func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request, username string, token string) {
 	fmt.Println("WebSocket Endpoint Hit")
 	conn, err := websocket.Upgrade(w, r)
@@ -26,12 +28,12 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request, usern
 	client.Read()
 }
 
+// We use setup routes because in development it is necessary to use cors.
+// Due to the frontend and backend running on different.
 func setupRoutes() {
 	pool := websocket.NewPool()
 	go pool.Start()
 
-	// allow cors
-	// Define a CORS middleware handler
 	corsHandler := func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Set CORS headers
@@ -56,12 +58,10 @@ func setupRoutes() {
 	http.HandleFunc("/history", MessageHist)
 	http.HandleFunc("/logout", logout)
 
-	// Define the handler for the /ws route
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		// Print authentication token to console
+
 		username := r.URL.Query().Get("username")
 		token := r.URL.Query().Get("token")
-
 		fmt.Println("authenitcating user for ws", username, token)
 		if dbutils.FindToken(token, username) {
 			serveWs(pool, w, r, username, token)
@@ -70,8 +70,23 @@ func setupRoutes() {
 			return
 		}
 	})
+	//Serve the static page
+	fs := http.FileServer(http.Dir("build"))
+	http.Handle("/", fs)
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "build/index.html")
+	})
+
+	http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "build/index.html")
+	})
+
 	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
 }
+
+// This route gets the queries the message history.
+// The SQl calls need to be fixed with a join statement
+// In order to run faster.
 func MessageHist(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("getting history")
 	username := r.URL.Query().Get("username")
@@ -80,7 +95,14 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 	if dbutils.FindToken(token, username) {
 		fmt.Println("authenitcating user for message history", username, token)
 		messageHistory := dbutils.GetMessageHistory(10, username)
+		length := len(messageHistory)
+
 		messageHistoryJSON, err := json.Marshal(messageHistory)
+		if length == 0 {
+			//messageHistory = []string{}
+			messageHistoryJSON, err = json.Marshal([]string{})
+		}
+
 		if err != nil {
 			// Handle error
 			log.Println("Error marshaling message history:", err)
@@ -98,6 +120,7 @@ func MessageHist(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// On Logout, the user auth token is deleted from the stack
 func logout(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	token := r.URL.Query().Get("token")
@@ -111,15 +134,13 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Handler function for the /auth route
+// Checks if a given account is in the database
 func checkAcc(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("Checking user exists")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Read the request body
 	var requestBody struct {
 		Username string `json:"username"`
 	}
@@ -128,35 +149,26 @@ func checkAcc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error decoding request body", http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close() // Close the request body
+	defer r.Body.Close()
 
-	// Extract the username from the struct
 	username := requestBody.Username
 
 	exists := dbutils.UsernameExists(username)
 
 	response := map[string]bool{"userExists": exists}
 
-	// Encode the response to JSON
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 		return
 	}
 
-	// Set content type header
 	w.Header().Set("Content-Type", "application/json")
-
-	// Write the response
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(jsonResponse)
-
-	// Send response based on username existence
-
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("authenticating user")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -166,19 +178,14 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 
-	// Read the request body
 	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
 		http.Error(w, "Error decoding request body", http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close() // Close the request body
-	// Print the request body
+	defer r.Body.Close()
 	username := login.Username
 	password := login.Password
-	//fmt.Println(username, password)
 	res := dbutils.AuthUser(username, password)
-	fmt.Println("validated user", username)
-
 	var jsonResponse map[string]string
 
 	if res {
@@ -188,28 +195,23 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		jsonResponse = map[string]string{"message": "failure"}
 	}
-
-	// Marshal the JSON response only once
 	responseBytes, err := json.Marshal(jsonResponse)
 	if err != nil {
 		http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 		return
 	}
 
-	// Set content type header
 	w.Header().Set("Content-Type", "application/json")
-
-	// Write the response
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(responseBytes)
 	if err != nil {
-		// Handle error
+		// TODO Handle error
 	}
 
 }
 
+// This will accept a json of username and password, and try to sign them up. Duplicate users not allowed
 func signupHandler(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("authenticating user")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -218,7 +220,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
-	// Read the request body
+
 	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
 		http.Error(w, "Error decoding request body", http.StatusInternalServerError)
 		return
@@ -239,8 +241,9 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Alex's Chat App
 func main() {
-	fmt.Println("Distributed Chat App v0.01")
+	fmt.Println("Alex's Chat App")
 	dbutils.Dbsetup()
 	dbutils.Create_db_if_not_exists()
 	setupRoutes()

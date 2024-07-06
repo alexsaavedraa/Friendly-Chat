@@ -11,10 +11,7 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import MessageBox from "../components/MessageBox.tsx"
 import { useNavigate } from "react-router-dom";
-const host = "192.168.0.180";
-const port = 8080;
-const endpoint_base = `${host}:${port}`;
-
+import { endpoint_base } from "../config.ts";
 
 interface ChatPageState {
     chatHistory: any[]; 
@@ -43,7 +40,7 @@ interface ChatPageState {
   
 
 class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
-    constructor(props) {
+    constructor(props:any) {
         super(props);
         this.state = {
           chatHistory: [],
@@ -55,7 +52,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         console.log(styles)
     }
 
-    componentWillReceiveProps = (nextProps) => {
+    componentWillReceiveProps = (nextProps: any) => {
       if (nextProps.loggedIn !== this.props.loggedIn) {
         this.props.navigate("/login")
       }
@@ -124,7 +121,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
             throw new Error('Failed to fetch history');
           }
           const history: Message[] = await response.json();
-          const historyMessageScores = history.reduce((acc, message) => {
+          const historyMessageScores = history.reduce((acc: any, message) => {
             acc[message.MessageID] = message.votes;
             return acc;
         }, {});
@@ -178,7 +175,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
     };
 };
 
-export default function(props) {
+export default function(props: any) {
   const navigate = useNavigate();
   return <ChatPage {...props} navigate={navigate} />;
 }
