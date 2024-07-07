@@ -11,7 +11,7 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import MessageBox from "../components/MessageBox.tsx"
 import { useNavigate } from "react-router-dom";
-import { endpoint_base } from "../config.ts";
+import { endpoint_base, protocol_base } from "../config.ts";
 
 interface ChatPageState {
     chatHistory: any[]; 
@@ -116,7 +116,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
         try {
-          const response = await fetch(`${endpoint_base}/history?username=${username}&token=${token}`);
+          const response = await fetch(`${protocol_base}//${endpoint_base}/history?username=${username}&token=${token}`);
           if (!response.ok) {
             throw new Error('Failed to fetch history');
           }
