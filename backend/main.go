@@ -247,6 +247,8 @@ func main() {
 	dbutils.Dbsetup()
 	dbutils.Create_db_if_not_exists()
 	setupRoutes()
-	http.ListenAndServe(":8080", nil)
-
+	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
