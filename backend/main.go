@@ -81,7 +81,7 @@ func setupRoutes() {
 		http.ServeFile(w, r, "build/index.html")
 	})
 
-	err := http.ListenAndServeTLS(":8292", "server.crt", "server.key", corsHandler(http.DefaultServeMux))
+	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", corsHandler(http.DefaultServeMux))
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -252,7 +252,7 @@ func main() {
 	dbutils.Dbsetup()
 	dbutils.Create_db_if_not_exists()
 	setupRoutes()
-	err := http.ListenAndServeTLS(":8292", "server.crt", "server.key", nil)
+	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
