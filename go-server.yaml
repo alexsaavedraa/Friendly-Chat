@@ -13,15 +13,19 @@ spec:
         app: go-server
     spec:
       containers:
-      - name: server-container
-        imagePullPolicy: Always
-        image: alexsaavedraa/DOCKERIMAGE:v6 # Replace with your actual image name and tag
-        ports:
-        - containerPort: 8080  # Port exposed by the client container
-      - name: postgres
-        imagePullPolicy: Always
-        image: alexsaavedraa/postgres:v1 # Replace with your actual image name and tag
-        ports:
+        - name: server-container
+          image:  22172d7f4893 # Replace with your actual image name and tag
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8292  # Port exposed by the Go server container (updated to 8292)
+        - name: postgres
+          image: 7592e667be0a  # Replace with your actual image name and tag
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432  # Port exposed by the PostgreSQL container
+
+---
+
         
 ---
 apiVersion: v1
@@ -32,9 +36,6 @@ spec:
   selector:
     app: go-server
   ports:
-  - name: http
-    port: 8080
-    targetPort: 8080
-    targetPort: 8080  # Port exposed by the client container
- 
-
+    - name: https
+      port: 443
+      targetPort: 8292  # Targeting port 8292 of the container (Go server)
