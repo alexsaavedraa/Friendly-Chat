@@ -71,7 +71,7 @@ func setupRoutes() {
 		}
 	})
 	//Serve the static page
-	fs := http.FileServer(http.Dir("/build"))
+	fs := http.FileServer(http.Dir("build"))
 	http.Handle("/", fs)
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "build/index.html")
