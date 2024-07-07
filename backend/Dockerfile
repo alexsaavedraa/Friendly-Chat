@@ -1,5 +1,6 @@
 # Use the official golang image as a base image
-FROM golang:latest
+FROM arm64v8/golang:1.22
+
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -16,8 +17,8 @@ COPY . .
 # Build the Go app
 RUN go build -o main .
 
-# Expose port 8080 to the outside world
-EXPOSE 8080
+# Expose port 443 to the outside world
+EXPOSE 8292
 
 # Command to run the executable
 CMD ["./main"]
