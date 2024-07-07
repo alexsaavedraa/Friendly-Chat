@@ -3,13 +3,14 @@ import { useState } from "react";
 import ReactTimeAgo from 'react-time-ago'
 import VoteButton from './VoteButton.tsx'
 import { Divider } from "@mui/material";
+import { addHours } from 'date-fns';
 
 const MessageBox = (props: any) => {
     const message = props.message.body;
     const messageID = props.message?.MessageID;
     const category = props.message.category;
     const username = props.message.username;
-    const timestamp =  props.message.time ? new Date(props.message.time) : null;
+    const timestamp = props.message.time ? addHours(new Date(props.message.time), 5) : null;
     const messageScore = props.messageScore
     let initialVote:number;
     if (props.message.user_vote=="up") {initialVote=1}
