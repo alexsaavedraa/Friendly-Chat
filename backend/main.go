@@ -81,7 +81,7 @@ func setupRoutes() {
 		http.ServeFile(w, r, "build/index.html")
 	})
 
-	http.ListenAndServe(":80", corsHandler(http.DefaultServeMux))
+	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
 	// err := http.ListenAndServeTLS(":443", "server.crt", "server.key", corsHandler(http.DefaultServeMux))
 	// if err != nil {
 	// 	log.Fatal("ListenAndServe: ", err)
@@ -254,8 +254,8 @@ func main() {
 	dbutils.Create_db_if_not_exists()
 	setupRoutes()
 
-	// err := http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
-	// if err != nil {
-	// 	log.Fatal("ListenAndServe: ", err)
-	// }
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
