@@ -1,5 +1,9 @@
-// config.js
-const host = "raspberrypi.local";
-const port = 8080;
+// config.ts
+const protocol = window.location.protocol;
+const hostname = window.location.hostname;
+const port = window.location.port || (protocol === 'https:' ? '443' : '80');
 
-export const endpoint_base = `${host}:${port}`;
+export const endpoint_base = `${protocol}//${hostname}:${port}`;
+
+// Usage
+console.log(endpoint_base);  // Will log something like 'https://example.com:443'
