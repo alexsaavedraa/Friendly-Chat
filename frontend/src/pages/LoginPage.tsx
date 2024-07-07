@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { endpoint_base } from "../config";
+import { endpoint_base, protocol_base } from "../config";
 
 const Login = (props: any) => {
 
@@ -44,7 +44,7 @@ const Login = (props: any) => {
     }
 
     const checkAccountExists =(callback: any)  => {
-        fetch(`http://${endpoint_base}/check-account`, {
+        fetch(`${protocol_base}//${endpoint_base}/check-account`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ const Login = (props: any) => {
 
     // Log in a user using username and password
     const logIn = () => {
-        fetch(`http://${endpoint_base}/auth`, {
+        fetch(`${protocol_base}//${endpoint_base}/auth`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -78,12 +78,12 @@ const Login = (props: any) => {
                 window.alert("Wrong username or password")
             }
         })
-        .catch(e => setLoginError("Error logging in. Please try again."))
+        .catch(e => setLoginError("Error logging in. We may be experiencing server issues right now."))
     }
 
     const createAccount = async () => {
         try {
-            const response = await fetch(`http://${endpoint_base}/signup`, {
+            const response = await fetch(`${protocol_base}//${endpoint_base}/signup`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,4 +1,5 @@
-import { endpoint_base } from "../config";
+import { endpoint_base, protocol_base } from "../config";
+
 let socket: WebSocket | null = null;
 
 export function connect(username: string, token: string, callback: any) {

@@ -2,7 +2,7 @@ import React from "react"
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Button } from "@mui/material";
 import { close } from "../api/index";
-import { endpoint_base } from "../config";
+import { endpoint_base, protocol_base } from "../config";
 
 
 
@@ -22,7 +22,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = (({isLoggedIn, setIsLoggedIn})
                 const userDataString = localStorage.getItem("user");
                 const userData = userDataString ? JSON.parse(userDataString) : null;
                 const { username, token } = userData || {};
-                const response = await fetch(`http://${endpoint_base}/logout?username=${username}&token=${token}`, {
+                const response = await fetch(`${protocol_base}//${endpoint_base}/logout?username=${username}&token=${token}`, {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
