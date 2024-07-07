@@ -81,7 +81,12 @@ func setupRoutes() {
 		http.ServeFile(w, r, "build/index.html")
 	})
 
-	http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
+	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", corsHandler(http.DefaultServeMux))
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+
+	//http.ListenAndServe(":8080", corsHandler(http.DefaultServeMux))
 }
 
 // This route gets the queries the message history.
