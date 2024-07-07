@@ -116,7 +116,7 @@ class ChatPage extends React.Component<ChatPageProps, ChatPageState> {
         const userData = userDataString ? JSON.parse(userDataString) : null;
         const { username, token } = userData || {};
         try {
-          const response = await fetch(`http://${endpoint_base}/history?username=${username}&token=${token}`);
+          const response = await fetch(`${endpoint_base}/history?username=${username}&token=${token}`);
           if (!response.ok) {
             throw new Error('Failed to fetch history');
           }
