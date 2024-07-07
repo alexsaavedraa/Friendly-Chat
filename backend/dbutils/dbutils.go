@@ -243,6 +243,9 @@ func countvotes(messageID string) int {
 func AddMessage(body, category, timestamp, username string) string {
 	//fmt.Println(" adding message: ", body, category, timestamp, username)
 
+	if len(body) > 256 {
+		body = body[:256]
+	}
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 	db, err := sql.Open("postgres", connStr)
